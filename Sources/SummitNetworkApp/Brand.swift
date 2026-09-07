@@ -1,8 +1,8 @@
 import SwiftUI
 
 enum Brand {
-    static let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Small World"
-    static let tagline = "You know more people here than you think."
+    static let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Span"
+    static let tagline = "See who you know. Find who to meet."
     static let creatorName = Bundle.main.object(forInfoDictionaryKey: "CreatorName") as? String ?? ""
     static var creatorURL: URL? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "CreatorLinkedInURL") as? String,
@@ -18,11 +18,11 @@ enum Brand {
 struct BrandMark: View {
     var body: some View {
         Group {
-            if let url = Bundle.main.url(forResource: "SmallWorld-Icon", withExtension: "png"),
+            if let url = Bundle.main.url(forResource: "Span-Icon", withExtension: "png"),
                let icon = NSImage(contentsOf: url) {
                 Image(nsImage: icon).resizable().scaledToFit()
             } else {
-                Image(systemName: "globe.americas.fill").resizable().scaledToFit()
+                Image(systemName: "point.topleft.down.curvedto.point.bottomright.up").resizable().scaledToFit()
                     .foregroundStyle(Brand.ink)
             }
         }

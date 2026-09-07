@@ -12,7 +12,7 @@ public enum AXClientError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .notTrusted:
-            return "Allow Small World in System Settings → Privacy & Security → Accessibility, then try again."
+            return "Allow Span in System Settings → Privacy & Security → Accessibility, then try again."
         case .appNotRunning:
             return "Open Lenny & Friends and navigate to Attendees → All attendees first."
         case .noWindow:

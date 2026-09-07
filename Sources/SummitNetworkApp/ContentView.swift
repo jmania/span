@@ -77,7 +77,7 @@ struct ContentView: View {
             Button("Delete saved session and start over", role: .destructive) { model.startOver() }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("This removes the attendee list and review decisions saved by Small World on this Mac.")
+            Text("This removes the attendee list and review decisions saved by Span on this Mac.")
         }
     }
 
@@ -85,9 +85,9 @@ struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("A LITTLE PREP. A BETTER SUMMIT.")
+                    Text("FAMILIAR FACES. NEW INTRODUCTIONS.")
                         .font(.system(size: 11, weight: .bold)).tracking(2).foregroundStyle(accent)
-                    Text("Good conversations start\nwith a familiar face.")
+                    Text("Know who’s there.\nFind your next conversation.")
                         .font(.system(size: 34, weight: .bold, design: .rounded)).foregroundStyle(ink)
                     Text("Find people you already know at Lenny & Friends, then make a shortlist of people you’d like to meet. Your attendee list and LinkedIn export stay on your Mac.")
                         .font(.title3).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -277,7 +277,7 @@ struct ContentView: View {
                 Button("Open LinkedIn") { model.openLinkedIn() }
                 Spacer()
             }
-            Text("Paste the text into LinkedIn’s normal search, check the connection badge, then choose a result below. Small World never reads or controls LinkedIn.")
+            Text("Paste the text into LinkedIn’s normal search, check the connection badge, then choose a result below. Span never reads or controls LinkedIn.")
                 .font(.caption).foregroundStyle(.secondary)
             HStack(spacing: 10) {
                 classificationButton("Second degree", icon: "person.2.fill", degree: .second)

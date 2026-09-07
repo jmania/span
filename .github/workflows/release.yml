@@ -53,16 +53,16 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
         run: |
-          xcrun notarytool submit dist/Small-World-0.3.0.dmg --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
-          xcrun stapler staple dist/Small-World-0.3.0.dmg
+          xcrun notarytool submit dist/Span-0.4.0.dmg --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
+          xcrun stapler staple dist/Span-0.4.0.dmg
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Small-World-macOS
-          path: dist/Small-World-0.3.0.dmg
+          name: Span-macOS
+          path: dist/Span-0.4.0.dmg
 
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/Small-World-0.3.0.dmg --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" dist/Span-0.4.0.dmg --generate-notes

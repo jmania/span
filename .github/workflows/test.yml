@@ -20,4 +20,4 @@ jobs:
       - uses: actions/checkout@v4
       - run: swift test
       - run: ./scripts/build_app.sh .build/ci-output
-      - run: codesign --verify --deep --strict '.build/ci-output/Small World.app'
+      - run: codesign --verify --deep --strict '.build/ci-output/Span.app'

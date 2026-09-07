@@ -4,9 +4,9 @@ set -eu
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 output_dir=${1:-"$project_dir/dist"}
 build_dir="$project_dir/.build/app-release"
-app="$output_dir/Small World.app"
-dmg="$output_dir/Small-World-0.3.0.dmg"
-zip="$output_dir/Small-World-0.3.0-macOS.zip"
+app="$output_dir/Span.app"
+dmg="$output_dir/Span-0.4.0.dmg"
+zip="$output_dir/Span-0.4.0-macOS.zip"
 
 mkdir -p "$output_dir" "$build_dir/module-cache" "$build_dir/clang-cache"
 rm -rf "$app" "$dmg" "$zip"
@@ -34,7 +34,7 @@ mkdir -p "$iconset"
 for specification in "16 icon_16x16.png" "32 icon_16x16@2x.png" "32 icon_32x32.png" "64 icon_32x32@2x.png" "128 icon_128x128.png" "256 icon_128x128@2x.png" "256 icon_256x256.png" "512 icon_256x256@2x.png" "512 icon_512x512.png" "1024 icon_512x512@2x.png"; do
   size=${specification%% *}
   filename=${specification#* }
-  sips -z "$size" "$size" "$project_dir/Assets/SmallWorld-Icon.png" --out "$iconset/$filename" >/dev/null
+  sips -z "$size" "$size" "$project_dir/Assets/Span-Icon.png" --out "$iconset/$filename" >/dev/null
 done
 python3 "$project_dir/scripts/make_icns.py" "$iconset" "$build_dir/AppIcon.icns"
 
@@ -42,7 +42,7 @@ mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$build_dir/SummitNetwork" "$app/Contents/MacOS/SummitNetwork"
 cp "$project_dir/Resources/Info.plist" "$app/Contents/Info.plist"
 cp "$build_dir/AppIcon.icns" "$app/Contents/Resources/AppIcon.icns"
-cp "$project_dir/Assets/SmallWorld-Icon.png" "$app/Contents/Resources/SmallWorld-Icon.png"
+cp "$project_dir/Assets/Span-Icon.png" "$app/Contents/Resources/Span-Icon.png"
 chmod +x "$app/Contents/MacOS/SummitNetwork"
 xattr -cr "$app"
 
@@ -55,9 +55,9 @@ codesign --verify --deep --strict "$app"
 
 stage=$(mktemp -d "${TMPDIR:-/tmp}/summit-network-dmg.XXXXXX")
 trap 'rm -rf "$stage"' EXIT
-ditto "$app" "$stage/Small World.app"
+ditto "$app" "$stage/Span.app"
 ln -s /Applications "$stage/Applications"
-if hdiutil create -volname "Small World" -srcfolder "$stage" -ov -format UDZO "$dmg" >/dev/null; then
+if hdiutil create -volname "Span" -srcfolder "$stage" -ov -format UDZO "$dmg" >/dev/null; then
   echo "Built $dmg"
 else
   if [ "${REQUIRE_DMG:-0}" = "1" ]; then exit 1; fi
