@@ -15,3 +15,10 @@ connections*.csv
 network-results*.csv
 review*.csv
 data/
+
+# Developer signing credentials never belong in source control.
+*.p12
+*.p8
+*.key
+.env
+.env.*

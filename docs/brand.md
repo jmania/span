@@ -22,6 +22,6 @@ The supplied raster illustrations are concept explorations made with the built-i
 
 Use concrete, understated language. Explain what helps the attendee make a decision. Show Josh’s credit quietly in the header and an optional invitation after the useful results.
 
-The app compares a user's first-degree export locally. Second-degree classifications are reviewed by the user; do not imply that Span automatically retrieves mutual contacts or connection graphs. The bridge is a brand metaphor, not a claim of additional data access.
+Span builds an attendee list and compares it locally with the user's LinkedIn export to suggest possible identities. No first-degree status is automatically confirmed. Say Possible connection, View possible connection’s profile, and Confirmed by you. Never imply automatic mutual-connection discovery or that a candidate URL belongs to the attendee. The bridge is a brand metaphor, not a claim of additional data access.
 
 Span is an independent project. References to the event explain compatibility only; do not use Lenny branding, event logos, or wording that implies official affiliation.

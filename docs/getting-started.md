@@ -1,10 +1,10 @@
 # Get started with Span
 
-Span finds first-degree LinkedIn matches among event attendees and gives you a searchable attendee directory. You need an Apple-silicon Mac (M1 or newer) running macOS 13 or later.
+Span builds a searchable attendee list and optionally highlights possible connections from your LinkedIn export. Every identity suggestion needs human confirmation. You need an Apple-silicon Mac (M1 or newer) running macOS 13 or later.
 
 **The public installer is being prepared.** Until a signed release appears on the [Releases page](https://github.com/jmania/span/releases), the repository is available for building from source.
 
-## 1. Request your LinkedIn export early
+## 1. Request your LinkedIn export early (optional for browsing)
 
 In LinkedIn, open **Settings & Privacy → Data privacy → Get a copy of your data** (sometimes labeled **Download your data**). Request an archive containing **Connections**. [LinkedIn’s instructions](https://www.linkedin.com/help/linkedin/answer/a1339364)
 
@@ -35,18 +35,21 @@ Span returns the event list to the beginning before counting. Names appear once 
 
 ## 4. Add your LinkedIn archive
 
-Drop the ZIP or `Connections.csv` into **Bring your LinkedIn connections**, or click **Scan archive…** and choose it. Span locates the connections file inside a ZIP automatically.
+Drop the ZIP or `Connections.csv` into **Add context from LinkedIn**, or click **Scan archive…** and choose it. Span locates the connections file inside a ZIP automatically.
 
 Either input can come first. Matching begins when both are ready. Your archive stays on your Mac.
 
 ## 5. Explore your results
 
-![People you know, illustrated with fictional contacts](../Assets/screenshots/span-demo-1.png)
+![Possible connections, illustrated with fictional contacts](../Assets/screenshots/span-demo-1.png)
 
-- **People you know:** view first-degree matches. Click a category card to change the list.
-- **All attendees:** search names, companies, and titles. The magnifying glass opens a LinkedIn search; the tag menu records a status if you wish.
-- **Export spreadsheet…:** save results for your own use.
+- **Everyone:** one searchable attendee list. Possible connections appear first by default; choose A–Z if you prefer.
+- **Possible connections:** expand a row to compare the attendee’s details with candidates from your export. **View possible connection’s profile** opens the candidate—not a verified attendee profile. **Search LinkedIn** independently searches for the attendee.
+- **Same person / Different person:** confirm the identity or dismiss only that pairing. Undo is available. A dismissal never removes the attendee.
+- **Confirmed by you:** filter to identities you explicitly confirmed. If you verified someone outside the suggestions, expand their row and use **I’ve checked LinkedIn — confirm this attendee**.
+- **Refresh order:** apply the filter/order again after decisions. Rows deliberately stay put while you make choices.
+- **Export list…:** export all attendees, clearly separating confirmed profiles from candidate profiles.
 
-Matching uses names and available details. Check ambiguous names before relying on a match. Second-degree connections are not detected automatically. Your real inputs and decisions are saved locally; you can quit and return later.
+Name and company similarity only suggest identities; nothing is confirmed automatically. No suggestion does not mean you are not connected. Profile-detail collection is planned for a later version. Your real inputs and decisions are saved locally; you can quit and return later.
 
 [Troubleshooting](troubleshooting.md) · [Back to Span](../README.md)
