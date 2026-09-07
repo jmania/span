@@ -2,7 +2,7 @@
 
 Span builds a searchable attendee list and optionally highlights possible connections from your LinkedIn export. Every identity suggestion needs human confirmation. You need an Apple-silicon Mac (M1 or newer) running macOS 13 or later.
 
-**The public installer is being prepared.** Until a signed release appears on the [Releases page](https://github.com/jmania/span/releases), the repository is available for building from source.
+**[Download Span for Mac](https://github.com/jmania/span/releases/latest/download/Span-macOS.dmg)** — free, signed, and Apple-notarized. No GitHub account needed. [Release notes](https://github.com/jmania/span/releases/tag/v0.5.1)
 
 ## 1. Request your LinkedIn export early (optional for browsing)
 
@@ -12,12 +12,10 @@ LinkedIn says larger archives may take up to 24 hours; yours may arrive sooner. 
 
 ## 2. Install Span and the event app
 
-Once the public release is available:
-
-1. Open [Span Releases](https://github.com/jmania/span/releases).
-2. Download **Span-macOS.dmg** from **Assets**. The “Source code” archives are for developers, not the installer.
-3. Open the disk image and drag **Span** to **Applications**.
-4. Open Span from Applications.
+1. [Download **Span-macOS.dmg**](https://github.com/jmania/span/releases/latest/download/Span-macOS.dmg). If using the [Releases page](https://github.com/jmania/span/releases), choose that file under **Assets**, not the “Source code” archives.
+2. Quit any older copy of Span.
+3. Open the disk image and drag **Span** to **Applications**. If upgrading, replace the older app when asked; your saved inputs are separate from the app.
+4. Open Span from Applications. If macOS shows an unexpected security warning, do not disable security protections; [report the exact message](https://github.com/jmania/span/issues).
 
 Install **Lenny & Friends** from the Mac App Store’s iPhone & iPad apps section, sign in with your event account, and open **Attendees → All attendees**. Clear any search or filter. Your event account must already have access to the directory.
 

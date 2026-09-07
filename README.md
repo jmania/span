@@ -6,6 +6,12 @@
 
 Span is a free Mac app that turns the event’s attendee directory into a useful, searchable desktop list. Add your LinkedIn connections export to highlight people you might already know—then confirm the identity yourself.
 
+### [Download Span for Mac ↓](https://github.com/jmania/span/releases/latest/download/Span-macOS.dmg)
+
+Free · macOS 13+ · Apple silicon (M1 or newer) · Signed and Apple-notarized
+
+Open the download, drag **Span** into **Applications**, then open it there. No GitHub account or coding tools needed. [Step-by-step setup →](docs/getting-started.md)
+
 ![Span showing possible connections in an attendee list, using fictional demo data](Assets/screenshots/span-demo-1.png)
 
 <details>
@@ -21,7 +27,7 @@ Made by [Josh Jacobson](https://www.linkedin.com/in/josh--jacobson/) for fellow 
 
 **[Releases and downloads](https://github.com/jmania/span/releases) · [Setup guide](docs/getting-started.md) · [Troubleshooting](docs/troubleshooting.md)**
 
-**Release status:** the source is available now. The signed, Apple-notarized Mac download is being prepared and will appear on the Releases page after installation testing. There is no public installer yet.
+**Release status:** Span 0.5.1 is available. Automated tests and local UI checks passed; an independent second-Mac installation test has not yet been performed. [Release notes](https://github.com/jmania/span/releases/tag/v0.5.1) · [Report a problem](https://github.com/jmania/span/issues)
 
 ## What you get
 
