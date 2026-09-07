@@ -525,7 +525,7 @@ struct ContentView: View {
             candidates = result.activeCandidates.isEmpty ? (result.candidates ?? []) : result.activeCandidates
         }
         let summaries = candidates.prefix(2).map {
-            [$0.connection.name, $0.connection.details].filter { !$0.isEmpty }.joined(separator: " · ")
+            [$0.connection.name, $0.connection.position, $0.connection.company].filter { !$0.isEmpty }.joined(separator: " · ")
         }
         return summaries.joined(separator: " / ") + (candidates.count > 2 ? " · +\(candidates.count - 2) more" : "")
     }
@@ -572,7 +572,7 @@ struct ContentView: View {
     }
 
     private func candidateIdentity(_ candidate: MatchCandidate) -> some View {
-        Text([candidate.connection.name, candidate.connection.details].filter { !$0.isEmpty }.joined(separator: " · "))
+        Text([candidate.connection.name, candidate.connection.position, candidate.connection.company].filter { !$0.isEmpty }.joined(separator: " · "))
             .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
     }
 
