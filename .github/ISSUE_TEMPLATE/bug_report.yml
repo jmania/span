@@ -1,0 +1,25 @@
+name: Report a bug
+description: Help improve Span without sharing contact data.
+title: "Bug: "
+body:
+  - type: markdown
+    attributes:
+      value: "Do not upload your LinkedIn archive, attendee list, or private contact details."
+  - type: input
+    id: version
+    attributes:
+      label: Span version and macOS version
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: What did you click, what did you expect, and what appeared instead?
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Error or collection counts (optional)
+      description: Include the exact error and expected/observed counts. The scan-diagnostics.txt log contains counts and scroll actions, not names.

@@ -1,145 +1,73 @@
 # Span
 
-<img src="Assets/Span-Icon.png" width="144" alt="Two bridge towers joined by a connecting span" />
+<img src="Assets/Span-Icon.png" width="96" alt="Span: two bridge towers joined by a cable at sunset" />
 
-**See who you know. Find who to meet.**
+## Find the people you already know at Lenny & Friends.
 
-Made by [Josh Jacobson](https://www.linkedin.com/in/josh--jacobson/) for fellow Lenny & Friends attendees.
+Span is a free Mac app that compares the event’s attendee list with your LinkedIn connections export. Find familiar faces, then explore a searchable desktop directory of everyone attending.
 
-I wanted to know which familiar faces were hiding in a long conference attendee list. Span is my answer: a free, open-source Mac app that helps you find people you know and prepare for a few new conversations.
+![Span showing first-degree connections using fictional demo data](Assets/screenshots/span-demo-1.png)
 
-The name is about the span between you and someone else: an existing connection, a possible introduction, or a conversation waiting to happen. The simple bridge mark adds a quiet nod to San Francisco. See the [brand direction](docs/brand.md).
+<details>
+<summary>Watch a short overview (fictional demo data)</summary>
 
-It collects the attendee names visible in the event app, matches them locally against your own LinkedIn connections export, and gives you a simple review queue for everyone else. It never asks for a LinkedIn password, reads browser cookies, scrapes LinkedIn, uploads attendee data, or sends messages.
+![Captioned overview of Span’s connections, setup, and directory screens](Assets/screenshots/Span-overview.gif)
 
-## Install the Mac app
+[Download the 30-second overview video](Assets/screenshots/Span-overview.mp4)
 
-**Preview status:** the native app and sample review flow are working. Full-directory collection still needs a live verification run, and an Apple-notarized public download has not been published yet. Source is available now; the installation steps below describe the planned signed release.
+</details>
 
-No Terminal, Python, Xcode, browser extension, or API key is required.
+Made by [Josh Jacobson](https://www.linkedin.com/in/josh--jacobson/) for fellow attendees. Built with help from OpenAI’s GPT-6 Astra in Codex.
 
-1. Open this repository’s **Releases** page.
-2. Download `Span-0.4.0.dmg`.
-3. Open it and drag **Span** into Applications.
-4. Open Span and follow the instructions in the window.
+**[Releases and downloads](https://github.com/jmania/span/releases) · [Setup guide](docs/getting-started.md) · [Troubleshooting](docs/troubleshooting.md)**
 
-Official releases should be signed and notarized so macOS can verify the developer. If you build the app from source yourself, that local build is ad-hoc signed and macOS may identify it as an unnotarized development build.
+**Release status:** the source is available now. The signed, Apple-notarized Mac download is being prepared and will appear on the Releases page after installation testing. There is no public installer yet.
 
-## Use the app
+## What you get
 
-### 1. Prepare the event app
+- **People you know:** find first-degree matches using your LinkedIn connections export.
+- **All attendees:** browse and search the collected list by name, company, or title.
+- **A next step when someone interests you:** open a pre-filled LinkedIn search, optionally record a connection status, or export your results.
 
-Install and sign in to Lenny & Friends on an Apple-silicon Mac. Open **Attendees → All attendees** and leave that screen visible.
+You do not need to review every attendee. Second-degree connections are optional, manually recorded information; they are not detected automatically.
 
-In Span:
+## What you’ll need
 
-1. Click **Allow attendee access**.
-2. Enable Span in **System Settings → Privacy & Security → Accessibility** if macOS asks.
-3. Return to Span and click **Check again**.
-4. Click **Collect attendees**.
+| You need | Why |
+| --- | --- |
+| An Apple-silicon Mac (M1 or newer), running macOS 13 or later | The Lenny & Friends iPhone/iPad app needs Apple silicon to run on a Mac. |
+| The Lenny & Friends app installed and signed in | Span reads the attendee list you can access in the event app. |
+| Your LinkedIn connections export | Span compares it with the guest list locally. Request it early; LinkedIn may take time to prepare it. |
+| Accessibility permission for Span | This lets Span read and scroll the attendee list. |
 
-The app shows a live count while it reads the directory. Keep Lenny & Friends open until collection finishes. The collected list and review decisions are stored privately in Application Support on your Mac; partial collection is not yet saved if extraction is interrupted.
+No Terminal, coding tools, API key, or LinkedIn login inside Span is required to use the packaged app.
 
-You can click **Preview with sample data** before granting access if you want to see the results workflow first. Sample data is fictional and is not saved.
+## How it works
 
-### 2. Get your LinkedIn connections archive
+1. **Get the guest list.** Open Lenny & Friends → Attendees → All attendees. In Span, allow attendee access and click **Collect attendees**. Keep the event app open while collection runs. Span returns to the beginning and verifies the final count.
+2. **Bring your connections.** Request a LinkedIn export containing **Connections**. Drop the downloaded ZIP or `Connections.csv` into Span’s archive box. You can do this before or after collection.
+3. **Find familiar faces.** Open **Results → People you know**. Use **All attendees** when you want to browse or search the wider directory.
 
-In LinkedIn, open **Settings & Privacy → Data privacy → Get a copy of your data** and request the archive that includes connections. LinkedIn will provide a ZIP download.
+Collection takes several minutes, especially when the event app starts near the bottom. LinkedIn’s export is a separate wait. [Follow the setup guide →](docs/getting-started.md)
 
-Drag that ZIP directly into Span. You do not need to unzip it or locate `Connections.csv`; the app does that for you.
+![Span’s searchable attendee directory, with fictional demo data](Assets/screenshots/span-demo-2.png)
 
-### 3. Review the results
+## Your data stays on your Mac
 
-First-degree connections are matched automatically. For each remaining attendee, Span prepares name-and-company search text:
+Span processes the attendee list and connections export locally. It has no analytics or cloud account, and it never asks for your LinkedIn password. Opening a LinkedIn search sends that search to LinkedIn in your browser.
 
-1. Click **Copy search text**.
-2. Click **Open LinkedIn** and paste the text into LinkedIn’s normal search.
-3. Mark the attendee **Second degree**, **Not connected**, **Actually first**, or **Skip for now**.
+The code is shared here; attendee lists, connections archives, and personal results are not. [Privacy and limitations →](docs/privacy.md)
 
-Every real review decision is saved immediately. You can quit and resume later. When finished, click **Export spreadsheet…** to save the results as CSV.
+## A small gift to the community
 
-## One more connection?
+Use it, remix it, improve it. Span’s code is available under the [MIT license](LICENSE). Contributions are welcome—see [Contributing](CONTRIBUTING.md) for where to start.
 
-I’m Josh. I built this to make meeting people at the summit a little easier. If it helps, [add me on LinkedIn](https://www.linkedin.com/in/josh--jacobson/) and come say hello. I promise I’m easier to find than the export button.
+I built this because I wanted an easier way to find familiar faces at the summit. If it helps, [add me on LinkedIn](https://www.linkedin.com/in/josh--jacobson/) and come say hello.
 
-The invitation in the app is optional and dismissible. It opens my profile; it never sends a request or changes your matches.
+## For developers
 
-## Why second-degree review is user-controlled
+See [Building and releasing Span](docs/development.md). The app is written in Swift and SwiftUI; matching happens locally against the connections export. The current collector reads attendee list cards. It does not open each person’s profile-detail screen or collect every attendee-supplied LinkedIn URL.
 
-LinkedIn’s User Agreement prohibits browser plug-ins, scripts, bots, and other software that scrape or automate its service. LinkedIn also warns that prohibited tools can result in account restrictions. Its supported account download includes first-degree connections but not second-degree connections.
+## Independent and unofficial
 
-Span therefore automates the supported first-degree comparison and makes second-degree review fast and resumable without reading or controlling LinkedIn.
-
-Official references:
-
-- [LinkedIn User Agreement](https://www.linkedin.com/legal/user-agreement)
-- [Prohibited software and extensions](https://www.linkedin.com/help/linkedin/answer/a1341387)
-- [Download your account data](https://www.linkedin.com/help/linkedin/answer/a1339364)
-
-## Privacy
-
-- Attendee and connection data stays on the user’s Mac.
-- The app has no analytics, cloud service, or advertising SDK.
-- It does not contain a LinkedIn login form.
-- It does not inspect LinkedIn pages or automate browser activity.
-- Private CSV files and saved review data are excluded from Git by default.
-- **Start over** explains exactly what will be removed and asks for confirmation.
-
-Only process directories you are authorized to access. Do not publish attendee data or use results for spam or bulk outreach. Respect the event’s rules, attendee expectations, privacy law, and LinkedIn’s terms.
-
-This project is not affiliated with or endorsed by Lenny’s Newsletter, Zuddl, or LinkedIn. Event and product names belong to their respective owners.
-
-## Build from source
-
-Developers need macOS 13 or later, Xcode Command Line Tools, Swift 6, and Python 3 for the test suite and icon packager.
-
-Build a universal application and local release archive:
-
-```sh
-./scripts/build_app.sh
-```
-
-The script builds both Apple-silicon and Intel binaries, creates `Span.app`, signs it locally, and packages it. On a normal Mac it produces a DMG. Environments that cannot create disk images receive a ZIP fallback.
-
-Run tests:
-
-```sh
-swift test
-python3 -m unittest discover -s Tests -p 'test_*.py' -v
-```
-
-### Signing and GitHub Releases
-
-The release workflow builds a universal app, signs it with a Developer ID certificate, submits the DMG to Apple for notarization, staples the notarization ticket, and attaches the DMG to the GitHub release.
-
-Repository maintainers must configure these GitHub Actions secrets:
-
-- `MACOS_CERTIFICATE_P12` — base64-encoded Developer ID Application certificate
-- `MACOS_CERTIFICATE_PASSWORD`
-- `KEYCHAIN_PASSWORD`
-- `APPLE_ID`
-- `APPLE_TEAM_ID`
-- `APPLE_APP_PASSWORD`
-
-Create a tag such as `v0.4.0` to run the release workflow.
-
-## Command-line tools
-
-The original command-line workflow remains available for development and troubleshooting:
-
-```sh
-./bin/summit-network extract --output attendees.csv
-./bin/summit-network match attendees.csv /path/to/Connections.csv --output network-results.csv
-./bin/summit-network review network-results.csv
-```
-
-Run `./bin/summit-network help` for details. End users should use the Mac application instead.
-
-## Known limitations
-
-- The Lenny & Friends iOS app currently requires an Apple-silicon Mac.
-- Accessibility labels can change between event-app versions; verify the attendee count shown after collection.
-- People with identical names and insufficient company/title information require review.
-- Second-degree classification is intentionally human-in-the-loop.
-
-Contributions that improve accessibility parsing, matching quality, onboarding, or support for additional event apps are welcome—without adding LinkedIn scraping or browser automation.
+Span is not affiliated with, endorsed by, or sponsored by Lenny & Friends Summit, Lenny’s Newsletter, Zuddl, LinkedIn, or OpenAI. Software and results are provided as-is, without warranties of accuracy, completeness, or fitness for a particular purpose. Names and trademarks belong to their respective owners. See [LICENSE](LICENSE).

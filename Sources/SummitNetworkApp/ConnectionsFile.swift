@@ -4,12 +4,14 @@ enum ConnectionsFileError: LocalizedError {
     case unsupportedFile
     case archiveFailed
     case connectionsNotFound
+    case emptyConnections
 
     var errorDescription: String? {
         switch self {
         case .unsupportedFile: return "Choose LinkedIn's ZIP archive or Connections.csv."
         case .archiveFailed: return "The LinkedIn archive could not be opened."
         case .connectionsNotFound: return "Connections.csv was not found in that archive."
+        case .emptyConnections: return "That file contains no connections. Choose an archive that includes Connections, not just Contacts. Your existing data has not been changed."
         }
     }
 }
