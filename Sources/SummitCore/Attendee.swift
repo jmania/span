@@ -1,11 +1,19 @@
 import Foundation
 
-struct Attendee: Hashable, Codable {
-    let name: String
-    let details: String
-    let sourceLabel: String
+public struct Attendee: Hashable, Codable, Sendable, Identifiable {
+    public let id: UUID
+    public let name: String
+    public let details: String
+    public let sourceLabel: String
 
-    static func parse(accessibilityLabel rawLabel: String) -> Attendee? {
+    public init(id: UUID = UUID(), name: String, details: String, sourceLabel: String) {
+        self.id = id
+        self.name = name
+        self.details = details
+        self.sourceLabel = sourceLabel
+    }
+
+    public static func parse(accessibilityLabel rawLabel: String) -> Attendee? {
         var label = rawLabel.trimmingCharacters(in: .whitespacesAndNewlines)
         let prefix = "Attendee profile image,"
         if label.range(of: prefix, options: [.anchored, .caseInsensitive]) != nil {
@@ -41,7 +49,7 @@ struct Attendee: Hashable, Codable {
     }
 }
 
-func csvField(_ value: String) -> String {
+public func csvField(_ value: String) -> String {
     if value.contains(",") || value.contains("\"") || value.contains("\n") || value.contains("\r") {
         return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
     }

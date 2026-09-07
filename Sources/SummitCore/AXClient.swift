@@ -2,97 +2,101 @@ import AppKit
 import ApplicationServices
 import Foundation
 
-enum AXClientError: LocalizedError {
+public enum AXClientError: LocalizedError {
     case notTrusted
     case appNotRunning(String)
     case noWindow
     case attendeeListNotFound
     case cannotScroll
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .notTrusted:
-            return "Accessibility permission is required. Enable your terminal in System Settings → Privacy & Security → Accessibility, then run this command again."
-        case .appNotRunning(let bundleID):
-            return "No running app has bundle identifier \(bundleID). Open the Summit app and its Attendees screen first."
+            return "Allow Summit Network in System Settings → Privacy & Security → Accessibility, then try again."
+        case .appNotRunning:
+            return "Open Lenny & Friends and navigate to Attendees → All attendees first."
         case .noWindow:
-            return "The Summit app is running, but no accessible window was found."
+            return "Lenny & Friends is running, but its window could not be read."
         case .attendeeListNotFound:
-            return "Could not find the attendee list. Open All attendees in the app and try again."
+            return "The attendee list could not be found. Open All attendees and try again."
         case .cannotScroll:
-            return "The attendee list was found, but macOS did not expose a usable scroll action."
+            return "The attendee list was found, but this version of the app does not expose a usable scroll action."
         }
     }
 }
 
-final class AXClient {
+public final class AXClient: @unchecked Sendable {
     private let application: AXUIElement
 
-    init(bundleIdentifier: String, promptForPermission: Bool = true) throws {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: promptForPermission] as CFDictionary
-        guard AXIsProcessTrustedWithOptions(options) else { throw AXClientError.notTrusted }
+    public static func isAccessibilityTrusted(prompt: Bool = false) -> Bool {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: prompt] as CFDictionary
+        return AXIsProcessTrustedWithOptions(options)
+    }
+
+    public static func isAppInstalled(bundleIdentifier: String) -> Bool {
+        NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) != nil
+    }
+
+    public static func isAppRunning(bundleIdentifier: String) -> Bool {
+        !NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).isEmpty
+    }
+
+    public init(bundleIdentifier: String, promptForPermission: Bool = false) throws {
+        guard Self.isAccessibilityTrusted(prompt: promptForPermission) else { throw AXClientError.notTrusted }
         guard let running = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first else {
             throw AXClientError.appNotRunning(bundleIdentifier)
         }
         application = AXUIElementCreateApplication(running.processIdentifier)
     }
 
-    func extractAttendees(
+    public func extractAttendees(
         maximum: Int,
         pauseMilliseconds: UInt32,
-        progress: (Int) -> Void
+        progress: @escaping @Sendable (Int) -> Void
     ) throws -> [Attendee] {
         guard let window: AXUIElement = attribute(application, kAXFocusedWindowAttribute) ?? firstWindow() else {
             throw AXClientError.noWindow
         }
 
         var attendees: [String: Attendee] = [:]
-        var orderedNames: [String] = []
+        var orderedKeys: [String] = []
         var stablePasses = 0
         var scrollTarget: AXUIElement?
 
         while attendees.count < maximum {
-            let elements = descendants(of: window, maximumDepth: 12)
-            for element in elements {
-                guard let role: String = attribute(element, kAXRoleAttribute), role == kAXButtonRole as String else { continue }
-                guard let label = bestLabel(for: element), let attendee = Attendee.parse(accessibilityLabel: label) else { continue }
-                let key = normalize(attendee.name)
-                guard attendees[key] == nil else { continue }
-                attendees[key] = attendee
-                orderedNames.append(key)
-            }
-
+            collectAttendees(from: window, into: &attendees, orderedKeys: &orderedKeys)
             progress(attendees.count)
             if attendees.count >= maximum { break }
 
-            if scrollTarget == nil {
-                scrollTarget = findScrollableElement(in: elements)
-            }
+            let elements = descendants(of: window, maximumDepth: 12)
+            if scrollTarget == nil { scrollTarget = findScrollableElement(in: elements) }
             guard let target = scrollTarget else { throw AXClientError.attendeeListNotFound }
 
             let before = attendees.count
             guard scrollDown(target) else { throw AXClientError.cannotScroll }
             usleep(pauseMilliseconds * 1_000)
+            collectAttendees(from: window, into: &attendees, orderedKeys: &orderedKeys)
 
-            let refreshed = descendants(of: window, maximumDepth: 12)
-            for element in refreshed {
-                guard let role: String = attribute(element, kAXRoleAttribute), role == kAXButtonRole as String else { continue }
-                guard let label = bestLabel(for: element), let attendee = Attendee.parse(accessibilityLabel: label) else { continue }
-                let key = normalize(attendee.name)
-                guard attendees[key] == nil else { continue }
-                attendees[key] = attendee
-                orderedNames.append(key)
-            }
-
-            if attendees.count == before {
-                stablePasses += 1
-            } else {
-                stablePasses = 0
-            }
+            stablePasses = attendees.count == before ? stablePasses + 1 : 0
             if stablePasses >= 4 { break }
         }
 
-        return orderedNames.compactMap { attendees[$0] }
+        return orderedKeys.compactMap { attendees[$0] }
+    }
+
+    private func collectAttendees(
+        from window: AXUIElement,
+        into attendees: inout [String: Attendee],
+        orderedKeys: inout [String]
+    ) {
+        for element in descendants(of: window, maximumDepth: 12) {
+            guard let role: String = attribute(element, kAXRoleAttribute), role == kAXButtonRole as String else { continue }
+            guard let label = bestLabel(for: element), let attendee = Attendee.parse(accessibilityLabel: label) else { continue }
+            let key = normalize(attendee.sourceLabel)
+            guard attendees[key] == nil else { continue }
+            attendees[key] = attendee
+            orderedKeys.append(key)
+        }
     }
 
     private func firstWindow() -> AXUIElement? {
@@ -130,9 +134,7 @@ final class AXClient {
     private func findScrollableElement(in elements: [AXUIElement]) -> AXUIElement? {
         for element in elements {
             let actions = actionNames(of: element)
-            if actions.contains(where: { isScrollDownAction($0, on: element) }) {
-                return element
-            }
+            if actions.contains(where: { isScrollDownAction($0, on: element) }) { return element }
         }
         for element in elements {
             let role: String? = attribute(element, kAXRoleAttribute)
@@ -179,8 +181,7 @@ final class AXClient {
     private func numericAttribute(_ element: AXUIElement, _ name: String) -> Double? {
         var value: CFTypeRef?
         guard AXUIElementCopyAttributeValue(element, name as CFString, &value) == .success else { return nil }
-        if let number = value as? NSNumber { return number.doubleValue }
-        return nil
+        return (value as? NSNumber)?.doubleValue
     }
 
     private func normalize(_ value: String) -> String {

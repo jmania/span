@@ -10,12 +10,12 @@ case "$command" in
     cd "$project_dir"
     build_dir="$project_dir/.build/standalone"
     binary="$build_dir/summit-export"
-    newest_source=$(find Sources/SummitExporter -type f -name '*.swift' -newer "$binary" 2>/dev/null | head -n 1 || true)
+    newest_source=$(find Sources/SummitCore Sources/SummitExporter -type f -name '*.swift' -newer "$binary" 2>/dev/null | head -n 1 || true)
     if [ ! -x "$binary" ] || [ -n "$newest_source" ]; then
       mkdir -p "$build_dir/module-cache" "$build_dir/clang-cache"
       export SWIFT_MODULECACHE_PATH="$build_dir/module-cache"
       export CLANG_MODULE_CACHE_PATH="$build_dir/clang-cache"
-      source_files="Sources/SummitExporter/Attendee.swift Sources/SummitExporter/AXClient.swift Sources/SummitExporter/main.swift"
+      source_files="Sources/SummitCore/Attendee.swift Sources/SummitCore/AXClient.swift Sources/SummitCore/CSV.swift Sources/SummitCore/NetworkMatcher.swift Sources/SummitExporter/main.swift"
       if ! swiftc $source_files -framework AppKit -framework ApplicationServices -o "$binary"; then
         if [ "$(uname -m)" = "arm64" ]; then
           echo "Native build failed; retrying with the Intel SDK slice available on this Mac…" >&2

@@ -1,20 +1,58 @@
 # Summit Network
 
-Summit Network is a privacy-first Mac tool for answering a useful conference question: **which attendees are already close to my professional network?**
+Summit Network is a private Mac app for finding people in a conference directory who are already close to your professional network.
 
-It does three things:
+It collects the attendee names visible in the event app, matches them locally against your own LinkedIn connections export, and gives you a simple review queue for everyone else. It never asks for a LinkedIn password, reads browser cookies, scrapes LinkedIn, uploads attendee data, or sends messages.
 
-1. Reads the visible attendee directory from the running iPhone/iPad event app using macOS Accessibility.
-2. Matches those attendees locally against your own LinkedIn `Connections.csv` export (first-degree connections).
-3. Opens a private, local review queue for checking the remaining people as second-degree or not connected using LinkedIn's normal search interface.
+## Install the Mac app
 
-The project never asks for a LinkedIn password, copies browser cookies, scrapes LinkedIn pages, or uploads the attendee list. All CSV files and review decisions stay on your Mac.
+No Terminal, Python, Xcode, browser extension, or API key is required.
 
-## Why the LinkedIn step is user-controlled
+1. Open this repository’s **Releases** page.
+2. Download `Summit-Network-0.2.0.dmg`.
+3. Open it and drag **Summit Network** into Applications.
+4. Open Summit Network and follow the instructions in the window.
 
-LinkedIn's User Agreement prohibits browser plug-ins, scripts, bots, and other software that scrape or automate its service. LinkedIn also says those tools can result in account restriction. Its supported data download includes names, public profile URLs, companies, and positions for your first-degree connections, but not second-degree connections.
+Official releases should be signed and notarized so macOS can verify the developer. If you build the app from source yourself, that local build is ad-hoc signed and macOS may identify it as an unnotarized development build.
 
-For that reason, Summit Network automates the safe part—first-degree matching from your own export—and makes second-degree checking fast and resumable without reading or controlling LinkedIn.
+## Use the app
+
+### 1. Prepare the event app
+
+Install and sign in to Lenny & Friends on an Apple-silicon Mac. Open **Attendees → All attendees** and leave that screen visible.
+
+In Summit Network:
+
+1. Click **Allow attendee access**.
+2. Enable Summit Network in **System Settings → Privacy & Security → Accessibility** if macOS asks.
+3. Return to Summit Network and click **Check again**.
+4. Click **Collect attendees**.
+
+The app shows a live count while it reads the directory. Keep Lenny & Friends open until collection finishes. Your progress and results are stored privately in Application Support on your Mac.
+
+You can click **Preview with sample data** before granting access if you want to see the results workflow first. Sample data is fictional and is not saved.
+
+### 2. Get your LinkedIn connections archive
+
+In LinkedIn, open **Settings & Privacy → Data privacy → Get a copy of your data** and request the archive that includes connections. LinkedIn will provide a ZIP download.
+
+Drag that ZIP directly into Summit Network. You do not need to unzip it or locate `Connections.csv`; the app does that for you.
+
+### 3. Review the results
+
+First-degree connections are matched automatically. For each remaining attendee, Summit Network prepares name-and-company search text:
+
+1. Click **Copy search text**.
+2. Click **Open LinkedIn** and paste the text into LinkedIn’s normal search.
+3. Mark the attendee **Second degree**, **Not connected**, **Actually first**, or **Skip for now**.
+
+Every real review decision is saved immediately. You can quit and resume later. When finished, click **Export spreadsheet…** to save the results as CSV.
+
+## Why second-degree review is user-controlled
+
+LinkedIn’s User Agreement prohibits browser plug-ins, scripts, bots, and other software that scrape or automate its service. LinkedIn also warns that prohibited tools can result in account restrictions. Its supported account download includes first-degree connections but not second-degree connections.
+
+Summit Network therefore automates the supported first-degree comparison and makes second-degree review fast and resumable without reading or controlling LinkedIn.
 
 Official references:
 
@@ -22,116 +60,70 @@ Official references:
 - [Prohibited software and extensions](https://www.linkedin.com/help/linkedin/answer/a1341387)
 - [Download your account data](https://www.linkedin.com/help/linkedin/answer/a1339364)
 
-## Requirements
+## Privacy
 
-- An Apple-silicon Mac capable of running the event's iOS app
-- macOS 13 or later
-- Xcode Command Line Tools (`xcode-select --install`); the launcher builds the small native exporter on first use
-- Python 3.10 or later (included with many developer setups)
-- Your own lawful access to the event directory and LinkedIn account
+- Attendee and connection data stays on the user’s Mac.
+- The app has no analytics, cloud service, or advertising SDK.
+- It does not contain a LinkedIn login form.
+- It does not inspect LinkedIn pages or automate browser activity.
+- Private CSV files and saved review data are excluded from Git by default.
+- **Start over** explains exactly what will be removed and asks for confirmation.
 
-No Python packages, browser extension, API key, or account credentials are required.
+Only process directories you are authorized to access. Do not publish attendee data or use results for spam or bulk outreach. Respect the event’s rules, attendee expectations, privacy law, and LinkedIn’s terms.
 
-## Quick start
+This project is not affiliated with or endorsed by Lenny’s Newsletter, Zuddl, or LinkedIn. Event and product names belong to their respective owners.
 
-Clone the repository, then from its directory:
+## Build from source
+
+Developers need macOS 13 or later, Xcode Command Line Tools, Swift 6, and Python 3 for the test suite and icon packager.
+
+Build a universal application and local release archive:
 
 ```sh
-chmod +x bin/summit-network
+./scripts/build_app.sh
 ```
 
-### 1. Export attendees
+The script builds both Apple-silicon and Intel binaries, creates `Summit Network.app`, signs it locally, and packages it. On a normal Mac it produces a DMG. Environments that cannot create disk images receive a ZIP fallback.
 
-Open the event app and navigate to **Attendees → All attendees**. Leave that screen visible, then run:
+Run tests:
+
+```sh
+swift test
+python3 -m unittest discover -s Tests -p 'test_*.py' -v
+```
+
+### Signing and GitHub Releases
+
+The release workflow builds a universal app, signs it with a Developer ID certificate, submits the DMG to Apple for notarization, staples the notarization ticket, and attaches the DMG to the GitHub release.
+
+Repository maintainers must configure these GitHub Actions secrets:
+
+- `MACOS_CERTIFICATE_P12` — base64-encoded Developer ID Application certificate
+- `MACOS_CERTIFICATE_PASSWORD`
+- `KEYCHAIN_PASSWORD`
+- `APPLE_ID`
+- `APPLE_TEAM_ID`
+- `APPLE_APP_PASSWORD`
+
+Create a tag such as `v0.2.0` to run the release workflow.
+
+## Command-line tools
+
+The original command-line workflow remains available for development and troubleshooting:
 
 ```sh
 ./bin/summit-network extract --output attendees.csv
-```
-
-On the first run, macOS will ask for Accessibility access. Enable the terminal you are using in **System Settings → Privacy & Security → Accessibility**, return to the attendee screen, and run the command again.
-
-The exporter scrolls the attendee list, deduplicates names, and writes `name`, `details`, and the original accessibility label to CSV. Keep the window open until it finishes. Verify the final count against the count shown in the app.
-
-For a different event app, supply its bundle identifier:
-
-```sh
-./bin/summit-network extract --bundle-id com.example.event --output attendees.csv
-```
-
-### 2. Download your first-degree connections
-
-In LinkedIn, go to **Settings & Privacy → Data privacy → Get a copy of your data** and request the archive that includes connections. When LinkedIn provides the archive, locate `Connections.csv`.
-
-Do not place this file in a public repository. The included `.gitignore` excludes common export filenames.
-
-### 3. Match first-degree connections
-
-```sh
 ./bin/summit-network match attendees.csv /path/to/Connections.csv --output network-results.csv
-```
-
-Matching is intentionally conservative:
-
-- Exact normalized names are accepted.
-- Duplicate names require supporting company/title overlap.
-- Fuzzy names are accepted only at a high threshold, with details used where available.
-- Everything uncertain remains `review`.
-
-The output includes the connection degree, confidence, public profile URL when present in your export, and the reason for each decision.
-
-### 4. Review second-degree candidates
-
-```sh
 ./bin/summit-network review network-results.csv
 ```
 
-A page opens on `127.0.0.1` (your Mac only). For each unmatched attendee:
-
-1. Copy the prepared name/company search text.
-2. Open LinkedIn and paste it into LinkedIn's search.
-3. Mark the attendee **2nd degree**, **Not connected**, **Skip**, or correct them to **1st**.
-
-Each decision is saved immediately back to `network-results.csv`, so you can stop and resume at any time.
-
-## Output schema
-
-| Column | Meaning |
-|---|---|
-| `name` | Attendee name from the event app |
-| `details` | Company/title text exposed by the app |
-| `degree` | `1st`, `2nd`, `not_connected`, `review`, or `skip` |
-| `confidence` | Local first-degree match score |
-| `linkedin_url` | URL supplied by your LinkedIn export, if matched |
-| `matched_connection` | Name in your connections export |
-| `match_reason` | Why the matcher accepted or withheld a match |
-| `reviewed_at` | Timestamp for a manual review decision |
-
-## Privacy and responsible use
-
-- Only process attendee data you are authorized to access.
-- Keep raw attendee and connection exports private.
-- Do not use the results for spam or bulk outreach.
-- Do not publish attendee data, results, passwords, cookies, or account archives.
-- Respect the event's rules, attendee expectations, privacy law, and LinkedIn's terms.
-
-This project is not affiliated with or endorsed by Lenny's Newsletter, Zuddl, or LinkedIn. Event and product names belong to their respective owners.
-
-## Development
-
-Run the tests:
-
-```sh
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-swift test
-```
-
-The Python portion uses only the standard library. The Swift exporter uses Apple's public Accessibility APIs and does not inspect app files, network traffic, or private storage.
+Run `./bin/summit-network help` for details. End users should use the Mac application instead.
 
 ## Known limitations
 
-- Accessibility labels vary between event app versions; inspect the output before relying on it.
-- Attendees with identical names and no company/title must be reviewed manually.
-- The event app must remain open on the attendee list while exporting.
-- Second-degree classification is intentionally human-in-the-loop because LinkedIn does not provide it in the member data export or generally available Connections API.
+- The Lenny & Friends iOS app currently requires an Apple-silicon Mac.
+- Accessibility labels can change between event-app versions; verify the attendee count shown after collection.
+- People with identical names and insufficient company/title information require review.
+- Second-degree classification is intentionally human-in-the-loop.
 
-Contributions that improve accessibility-label parsing, matching quality, or support additional event apps are welcome—without adding LinkedIn scraping or browser automation.
+Contributions that improve accessibility parsing, matching quality, onboarding, or support for additional event apps are welcome—without adding LinkedIn scraping or browser automation.

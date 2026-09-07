@@ -6,9 +6,18 @@ let package = Package(
     platforms: [.macOS(.v13)],
     products: [
         .executable(name: "summit-export", targets: ["SummitExporter"]),
+        .executable(name: "SummitNetworkApp", targets: ["SummitNetworkApp"]),
     ],
     targets: [
-        .executableTarget(name: "SummitExporter"),
-        .testTarget(name: "SummitExporterTests", dependencies: ["SummitExporter"]),
+        .target(
+            name: "SummitCore",
+            linkerSettings: [
+                .linkedFramework("AppKit"),
+                .linkedFramework("ApplicationServices"),
+            ]
+        ),
+        .executableTarget(name: "SummitExporter", dependencies: ["SummitCore"]),
+        .executableTarget(name: "SummitNetworkApp", dependencies: ["SummitCore"]),
+        .testTarget(name: "SummitCoreTests", dependencies: ["SummitCore"]),
     ]
 )

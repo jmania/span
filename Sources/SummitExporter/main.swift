@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(SummitCore)
+import SummitCore
+#endif
 
 struct Options {
     var bundleIdentifier = "com.zuddl.lennyfriendssummit"
