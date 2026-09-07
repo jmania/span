@@ -1,0 +1,17 @@
+.build/
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+dist/
+*.egg-info/
+outputs/
+work/
+
+# Private exports and review state. Never commit these.
+attendees*.csv
+Connections*.csv
+connections*.csv
+network-results*.csv
+review*.csv
+data/
