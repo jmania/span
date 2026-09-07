@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Connection: Hashable, Sendable {
+public struct Connection: Hashable, Codable, Sendable {
     public let name: String
     public let company: String
     public let position: String

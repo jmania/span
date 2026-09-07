@@ -6,6 +6,14 @@ final class SummitCoreTests: XCTestCase {
         let attendee = Attendee.parse(accessibilityLabel: "Attendee profile image, Maya Chen, Example Corp")
         XCTAssertEqual(attendee?.name, "Maya Chen")
         XCTAssertEqual(attendee?.details, "Example Corp")
+        let noImagePrefix = Attendee.parse(accessibilityLabel: "Aabhas Sharma, Product lead, observability at Salesforce")
+        XCTAssertEqual(noImagePrefix?.name, "Aabhas Sharma")
+        XCTAssertEqual(noImagePrefix?.details, "Product lead, observability at Salesforce")
+        let initials = Attendee.parse(accessibilityLabel: "A.J. Angus, Axon")
+        XCTAssertEqual(initials?.name, "A.J. Angus")
+        let noDetails = Attendee.parse(accessibilityLabel: "Attendee profile image, Abhi Motgi")
+        XCTAssertEqual(noDetails?.name, "Abhi Motgi")
+        XCTAssertNil(Attendee.parse(accessibilityLabel: "Description"))
         XCTAssertNil(Attendee.parse(accessibilityLabel: "Add connection"))
     }
 

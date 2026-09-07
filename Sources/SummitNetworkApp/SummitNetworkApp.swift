@@ -8,7 +8,7 @@ struct SummitNetworkApplication: App {
                 .frame(minWidth: 820, minHeight: 620)
         }
         .windowStyle(.hiddenTitleBar)
-        .defaultSize(width: 980, height: 800)
+        .defaultSize(width: 960, height: 680)
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) { }

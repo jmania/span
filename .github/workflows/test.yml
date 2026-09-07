@@ -19,5 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: swift test
+      - run: ./scripts/test_app_workflow.sh
       - run: ./scripts/build_app.sh .build/ci-output
       - run: codesign --verify --deep --strict '.build/ci-output/Span.app'

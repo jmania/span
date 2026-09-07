@@ -22,7 +22,8 @@ public struct Attendee: Hashable, Codable, Sendable, Identifiable {
 
         let ignored = [
             "Add connection", "Search", "All attendees", "Your connections",
-            "Message", "back", "scan_network"
+            "Attendees", "Message", "back", "scan_network", "About", "Interests",
+            "Social profiles", "No information added", "Description"
         ]
         guard !ignored.contains(where: { label.caseInsensitiveCompare($0) == .orderedSame }) else {
             return nil
@@ -30,9 +31,17 @@ public struct Attendee: Hashable, Codable, Sendable, Identifiable {
 
         let parts = label.split(separator: ",", omittingEmptySubsequences: false)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-        guard let first = parts.first, parts.count >= 2, looksLikeName(first) else {
+        guard let first = parts.first, looksLikeName(first) else {
             return nil
         }
+
+        // Some attendee cards contain only a name. Accept those when the
+        // accessibility label explicitly identifies a profile image or the
+        // name has at least two words; this avoids mistaking ordinary UI labels
+        // for people while preserving attendees with no company/title.
+        let hasProfilePrefix = rawLabel.range(of: prefix, options: [.anchored, .caseInsensitive]) != nil
+        let nameWordCount = first.split(whereSeparator: { $0.isWhitespace }).count
+        guard parts.count >= 2 || hasProfilePrefix || nameWordCount >= 2 else { return nil }
 
         return Attendee(
             name: first,

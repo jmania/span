@@ -1,6 +1,16 @@
-# Span icon explorations
+# Span app icon
 
-Generated with the built-in image-generation tool. Primary: `Span-Icon.png`, an abstract bridge. Alternate: `Span-Linked-Pillars.png`, two connected pillars.
+The active icon is the bridge-at-sunset artwork supplied by Josh in `Mac_AppIcon_Package` on September 7, 2026. The sun highlights the midpoint of the cable connecting the two towers.
+
+- `Span-Icon.png`: supplied `AppIcon_1024.png`, unchanged, used inside the app.
+- `AppIcon.icns`: supplied macOS icon container, unchanged, used by Finder and the Dock.
+- `AppIcon.iconset/`: supplied size-specific PNGs, preserved unchanged.
+
+The build copies the supplied files directly. No new artwork, resizing, or icon regeneration is performed.
+
+## Earlier explorations (not the active icon)
+
+The prompts below document earlier generated concepts. `Span-Linked-Pillars.png` is a historical alternate; the previous abstract bridge has been replaced by the supplied artwork.
 
 ## Primary prompt
 

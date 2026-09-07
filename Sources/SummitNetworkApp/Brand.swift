@@ -18,15 +18,15 @@ enum Brand {
 struct BrandMark: View {
     var body: some View {
         Group {
-            if let url = Bundle.main.url(forResource: "Span-Icon", withExtension: "png"),
+            if let url = Bundle.main.url(forResource: "AppIcon", withExtension: "icns"),
                let icon = NSImage(contentsOf: url) {
-                Image(nsImage: icon).resizable().scaledToFit()
+                Image(nsImage: icon).resizable().interpolation(.high).scaledToFit()
             } else {
                 Image(systemName: "point.topleft.down.curvedto.point.bottomright.up").resizable().scaledToFit()
                     .foregroundStyle(Brand.ink)
             }
         }
-        .frame(width: 46, height: 46)
+        .frame(width: 64, height: 64)
         .accessibilityHidden(true)
     }
 }
