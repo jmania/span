@@ -13,6 +13,7 @@ swiftc -target arm64-apple-macosx13.0 \
   Sources/SummitNetworkApp/SessionStore.swift \
   Tests/AppWorkflowChecks.swift \
   Tests/DirectoryScanChecks.swift \
+  Tests/IdentitySuggestionChecks.swift \
   -framework AppKit -framework ApplicationServices \
   -o "$build_dir/AppWorkflowChecks"
 "$build_dir/AppWorkflowChecks"

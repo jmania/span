@@ -15,7 +15,41 @@ public struct Connection: Hashable, Codable, Sendable {
         self.email = email
     }
 
-    var details: String { [company, position].filter { !$0.isEmpty }.joined(separator: " ") }
+    public var details: String { [company, position].filter { !$0.isEmpty }.joined(separator: " ") }
+}
+
+
+public struct MatchCandidate: Codable, Identifiable, Sendable {
+    public let connection: Connection
+    public let reason: String
+    /// Ordering evidence, not a calibrated probability.
+    public let rank: Double
+    public var otherAttendeeCount: Int = 0
+    public var id: String { connection.identityKey }
+}
+
+public extension Connection {
+    var identityKey: String {
+        if let url = linkedInProfileURL(url) { return url.absoluteString.lowercased() }
+        return [normalizedName(name), normalizedName(company), normalizedName(position)].joined(separator: "|")
+    }
+}
+
+public func linkedInProfileURL(_ value: String) -> URL? {
+    guard var parts = URLComponents(string: value.trimmingCharacters(in: .whitespacesAndNewlines)),
+          let host = parts.host?.lowercased(),
+          host == "linkedin.com" || host.hasSuffix(".linkedin.com"),
+          parts.scheme == "https" || parts.scheme == "http",
+          parts.user == nil, parts.password == nil else { return nil }
+    let path = parts.path.split(separator: "/")
+    guard path.count == 2, path[0] == "in", !path[1].isEmpty else { return nil }
+    parts.scheme = "https"
+    parts.host = "www.linkedin.com"
+    parts.port = nil
+    parts.path = "/in/\(path[1])"
+    parts.query = nil
+    parts.fragment = nil
+    return parts.url
 }
 
 public enum ConnectionDegree: String, Codable, CaseIterable, Sendable {
@@ -27,11 +61,11 @@ public enum ConnectionDegree: String, Codable, CaseIterable, Sendable {
 
     public var label: String {
         switch self {
-        case .first: return "First degree"
+        case .first: return "Confirmed by you"
         case .second: return "Second degree"
         case .notConnected: return "Not connected"
-        case .review: return "Needs review"
-        case .skip: return "Skipped"
+        case .review: return "Not confirmed"
+        case .skip: return "Undecided"
         }
     }
 }
@@ -41,10 +75,20 @@ public struct NetworkResult: Codable, Identifiable, Sendable {
     public let attendee: Attendee
     public var degree: ConnectionDegree
     public let confidence: Double?
-    public let linkedInURL: String
-    public let matchedConnection: String
+    public var linkedInURL: String
+    public var matchedConnection: String
     public let matchReason: String
     public var reviewedAt: Date?
+    public var candidates: [MatchCandidate]? = nil
+    public var rejectedCandidateIDs: [String]? = nil
+    public var confirmedCandidateID: String? = nil
+
+    public var isConfirmed: Bool { degree == .first && reviewedAt != nil }
+    public var activeCandidates: [MatchCandidate] {
+        (candidates ?? []).filter { !(rejectedCandidateIDs ?? []).contains($0.id) }
+    }
+    public var hasSuggestion: Bool { !isConfirmed && !activeCandidates.isEmpty }
+
 
     public init(
         id: UUID = UUID(), attendee: Attendee, degree: ConnectionDegree,
@@ -118,82 +162,80 @@ public enum ConnectionsCSV {
 
 public enum NetworkMatcher {
     public static func match(attendees: [Attendee], connections: [Connection]) -> MatchSummary {
-        MatchSummary(results: attendees.map { attendee in
-            let outcome = bestMatch(name: attendee.name, details: attendee.details, connections: connections)
-            guard let connection = outcome.connection else {
-                return NetworkResult(
-                    attendee: attendee, degree: .review,
-                    confidence: outcome.confidence > 0 ? outcome.confidence : nil,
-                    linkedInURL: "", matchedConnection: "", matchReason: outcome.reason
-                )
+        var seen = Set<String>()
+        let unique = connections.filter { seen.insert($0.identityKey).inserted }
+        let prepared = unique.map { ($0, normalizedName($0.name), meaningfulWords($0.company)) }
+        var results = attendees.map { attendee -> NetworkResult in
+            let wanted = normalizedName(attendee.name)
+            let eventWords = meaningfulWords(attendee.details)
+            let candidates = prepared.compactMap { item -> MatchCandidate? in
+                let (connection, name, companyWords) = item
+                let similarity = nameSimilarity(wanted, name)
+                guard !wanted.isEmpty, similarity >= 0.88 else { return nil }
+                let companyMatches = !companyWords.isEmpty && companyWords.isSubset(of: eventWords)
+                let reason = similarity == 1
+                    ? (companyMatches ? "Same name and company words. Please confirm the identity." : "Same name only. This may be a different person.")
+                    : (companyMatches ? "Similar name and company words. Please confirm the identity." : "Similar name only. This may be a different person.")
+                return MatchCandidate(connection: connection, reason: reason,
+                                      rank: similarity + (companyMatches ? 0.15 : 0))
+            }.sorted {
+                if $0.rank != $1.rank { return $0.rank > $1.rank }
+                return $0.id < $1.id
             }
-            return NetworkResult(
-                attendee: attendee, degree: .first, confidence: outcome.confidence,
-                linkedInURL: connection.url, matchedConnection: connection.name,
-                matchReason: outcome.reason
-            )
-        })
-    }
-
-    private struct Outcome {
-        let connection: Connection?
-        let confidence: Double
-        let reason: String
-    }
-
-    private static func bestMatch(name: String, details: String, connections: [Connection]) -> Outcome {
-        let wanted = normalizedName(name)
-        let exact = connections.filter { normalizedName($0.name) == wanted }
-        if exact.count == 1 {
-            let overlap = detailOverlap(details, exact[0].details)
-            return Outcome(connection: exact[0], confidence: overlap > 0 ? 1.0 : 0.97, reason: "exact name")
+            var result = NetworkResult(attendee: attendee, degree: .review, confidence: nil,
+                                       linkedInURL: "", matchedConnection: "",
+                                       matchReason: candidates.isEmpty ? "No suggestion from this export; connection status unknown." : "Possible identity matches; not confirmed.")
+            result.candidates = candidates
+            return result
         }
-        if exact.count > 1 {
-            let ranked = exact.sorted { detailOverlap(details, $0.details) > detailOverlap(details, $1.details) }
-            let overlap = detailOverlap(details, ranked[0].details)
-            if overlap >= 0.25 {
-                return Outcome(connection: ranked[0], confidence: min(1.0, 0.96 + overlap * 0.04), reason: "exact name; details disambiguated")
+        var uses: [String: Int] = [:]
+        for result in results {
+            for candidate in result.candidates ?? [] { uses[candidate.id, default: 0] += 1 }
+        }
+        for i in results.indices {
+            results[i].candidates = results[i].candidates?.map { candidate in
+                var item = candidate
+                item.otherAttendeeCount = max(0, (uses[item.id] ?? 1) - 1)
+                return item
             }
-            return Outcome(connection: nil, confidence: 0, reason: "multiple connections have this name")
         }
-
-        let ranked = connections.compactMap { connection -> (Double, Double, Connection)? in
-            let similarity = nameSimilarity(wanted, normalizedName(connection.name))
-            guard similarity >= 0.88 else { return nil }
-            return (similarity, detailOverlap(details, connection.details), connection)
-        }.sorted { lhs, rhs in lhs.0 == rhs.0 ? lhs.1 > rhs.1 : lhs.0 > rhs.0 }
-
-        guard let best = ranked.first else { return Outcome(connection: nil, confidence: 0, reason: "no first-degree name match") }
-        let runnerUp = ranked.count > 1 ? ranked[1].0 : 0
-        if best.0 >= 0.97, best.0 - runnerUp >= 0.03 {
-            return Outcome(connection: best.2, confidence: best.0 * 0.96 + best.1 * 0.04, reason: "high-confidence fuzzy name")
-        }
-        if best.0 >= 0.92, best.1 >= 0.34, best.0 - runnerUp >= 0.02 {
-            return Outcome(connection: best.2, confidence: best.0 * 0.8 + best.1 * 0.2, reason: "fuzzy name plus matching details")
-        }
-        return Outcome(connection: nil, confidence: best.0, reason: "possible match: \(best.2.name)")
+        return MatchSummary(results: results)
     }
+}
+
+private func meaningfulWords(_ value: String) -> Set<String> {
+    let generic: Set<String> = ["inc", "llc", "ltd", "corp", "company", "the", "and", "at",
+        "product", "manager", "director", "lead", "founder", "consultant", "independent", "self", "employed"]
+    return Set(normalizedName(value).split(separator: " ").map(String.init)
+        .filter { $0.count > 1 && !generic.contains($0) })
 }
 
 public enum ResultsCSV {
     public static func encode(_ results: [NetworkResult]) -> String {
         let formatter = ISO8601DateFormatter()
-        let rows = [[
-            "name", "details", "degree", "confidence", "linkedin_url",
-            "matched_connection", "match_reason", "reviewed_at"
-        ]] + results.map { result in
-            [
-                result.attendee.name,
-                result.attendee.details,
-                result.degree.rawValue,
-                result.confidence.map { String(format: "%.3f", $0) } ?? "",
-                result.linkedInURL,
-                result.matchedConnection,
-                result.matchReason,
+        var rows = [["name", "event_details", "status", "confirmed_profile_url",
+                     "possible_connection_names", "possible_connection_details", "possible_profile_urls",
+                     "rejected_candidate_ids", "reviewed_at", "event_profile_url", "event_profile_source"]]
+        for result in results {
+            let candidates = result.isConfirmed ? [] : result.activeCandidates
+            let status = result.isConfirmed ? "confirmed_by_you"
+                : (result.hasSuggestion ? "possible_connection" : "unconfirmed")
+            rows.append([
+                result.attendee.name, result.attendee.details, status,
+                result.isConfirmed ? result.linkedInURL : "",
+                candidates.map { $0.connection.name }.joined(separator: " | "),
+                candidates.map { $0.connection.details }.joined(separator: " | "),
+                candidates.map { linkedInProfileURL($0.connection.url)?.absoluteString ?? "" }.joined(separator: " | "),
+                (result.rejectedCandidateIDs ?? []).joined(separator: " | "),
                 result.reviewedAt.map(formatter.string) ?? "",
-            ]
+                result.attendee.profileEvidence?.linkedInURL ?? "",
+                result.attendee.profileEvidence?.source ?? ""
+            ])
         }
-        return CSV.encode(rows: rows)
+        return CSV.encode(rows: rows.map { $0.map { value in
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            return ["=", "+", "-", "@"].contains(where: { trimmed.hasPrefix($0) }) ? "'" + value : value
+        } })
     }
 }
 
@@ -205,17 +247,11 @@ public func normalizedName(_ value: String) -> String {
     return words.map { $0.lowercased() }.joined(separator: " ")
 }
 
-private func detailOverlap(_ left: String, _ right: String) -> Double {
-    let a = Set(normalizedName(left).split(separator: " ").filter { $0.count > 1 })
-    let b = Set(normalizedName(right).split(separator: " ").filter { $0.count > 1 })
-    guard !a.isEmpty, !b.isEmpty else { return 0 }
-    return Double(a.intersection(b).count) / Double(min(a.count, b.count))
-}
-
 private func nameSimilarity(_ left: String, _ right: String) -> Double {
     if left == right { return 1 }
     let a = Array(left), b = Array(right)
     guard !a.isEmpty, !b.isEmpty else { return 0 }
+    guard Double(abs(a.count - b.count)) / Double(max(a.count, b.count)) <= 0.12 else { return 0 }
     var previous = Array(0...b.count)
     for (i, leftCharacter) in a.enumerated() {
         var current = [i + 1] + Array(repeating: 0, count: b.count)

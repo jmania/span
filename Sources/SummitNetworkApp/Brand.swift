@@ -2,7 +2,7 @@ import SwiftUI
 
 enum Brand {
     static let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Span"
-    static let tagline = "See who you know. Find who to meet."
+    static let tagline = "Your Summit list. People you might know."
     static let creatorName = Bundle.main.object(forInfoDictionaryKey: "CreatorName") as? String ?? ""
     static var creatorURL: URL? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "CreatorLinkedInURL") as? String,

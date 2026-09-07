@@ -1,10 +1,18 @@
 import Foundation
 
+/// Optional future enrichment. Source-reported profile information is not human confirmation.
+public struct ProfileEvidence: Hashable, Codable, Sendable {
+    public let linkedInURL: String
+    public let source: String
+    public let collectedAt: Date
+}
+
 public struct Attendee: Hashable, Codable, Sendable, Identifiable {
     public let id: UUID
     public let name: String
     public let details: String
     public let sourceLabel: String
+    public var profileEvidence: ProfileEvidence? = nil
 
     public init(id: UUID = UUID(), name: String, details: String, sourceLabel: String) {
         self.id = id

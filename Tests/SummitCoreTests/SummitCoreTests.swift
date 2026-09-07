@@ -32,7 +32,8 @@ final class SummitCoreTests: XCTestCase {
         let connections = try ConnectionsCSV.decode(csv)
         let attendee = Attendee(name: "Maya Chen", details: "Example Corp", sourceLabel: "Maya Chen, Example Corp")
         let summary = NetworkMatcher.match(attendees: [attendee], connections: connections)
-        XCTAssertEqual(summary.firstDegreeCount, 1)
-        XCTAssertEqual(summary.results[0].linkedInURL, "https://example.test/maya")
+        XCTAssertEqual(summary.firstDegreeCount, 0)
+        XCTAssertEqual(summary.results[0].candidates?.count, 1)
+        XCTAssertEqual(summary.results[0].linkedInURL, "")
     }
 }

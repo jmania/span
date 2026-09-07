@@ -8,7 +8,7 @@ Inputs and decisions are stored in `~/Library/Application Support/Summit Network
 
 ## What results mean
 
-- Automatic first-degree matches use names and available company/title information. They are useful leads, not a guarantee of identity or current connection status.
+- Possible connections use name similarity and meaningful company words. They are leads, never automatic confirmations. Confirmations are explicitly made by the user; a dismissed pairing is not a claim of non-connection.
 - Second-degree labels are manually recorded; the connections export does not supply them.
 - Span reads list-card information, not every profile-detail page. It uses LinkedIn links from matches in your archive where available and offers a pre-filled search otherwise.
 - Event app changes can affect collection. Span rejects incomplete scans when the count differs from the event app’s total. Counts can change as people join the event.

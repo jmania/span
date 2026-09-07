@@ -6,6 +6,7 @@ struct AppWorkflowChecks {
     @MainActor
     static func main() async throws {
         try checkDirectoryTraversal()
+        try await checkIdentitySuggestions()
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("span-workflow-tests-\(UUID())")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -23,7 +24,7 @@ struct AppWorkflowChecks {
         let restored = AppModel(sessionURL: firstURL)
         precondition(restored.connections?.count == 1, "Archive-first import must survive restart")
         try restored.acceptCollectedAttendees(people)
-        precondition(restored.firstDegreeCount == 1 && restored.results.count == 2)
+        precondition(restored.firstDegreeCount == 0 && restored.results.count == 2)
         let searchURL = restored.linkedInSearchURL(for: people[1])
         precondition(searchURL?.absoluteString.contains("search/results/people") == true)
         precondition(searchURL?.absoluteString.contains("Alex") == true && searchURL?.absoluteString.contains("Rivera") == true)
@@ -31,9 +32,9 @@ struct AppWorkflowChecks {
 
         let second = AppModel(sessionURL: directory.appendingPathComponent("attendees-first.json"))
         try second.acceptCollectedAttendees(people)
-        precondition(second.connections == nil && second.results.isEmpty)
+        precondition(second.connections == nil && second.results.count == 2)
         await second.importConnections(from: archive)?.value
-        precondition(second.firstDegreeCount == 1 && second.results.count == 2)
+        precondition(second.firstDegreeCount == 0 && second.results.count == 2)
         let reviewID = second.currentReview?.id
         second.classifyCurrent(as: .second)
         precondition(second.canUndoReview && second.currentReview?.id != reviewID)
@@ -76,7 +77,7 @@ struct AppWorkflowChecks {
         precondition(overlap.importConnections(from: archive) == nil, "Reject duplicate import while busy")
         try overlap.acceptCollectedAttendees(people)
         await importTask?.value
-        precondition(overlap.firstDegreeCount == 1 && !overlap.isImporting)
+        precondition(overlap.firstDegreeCount == 0 && !overlap.isImporting)
 
         let legacy = try JSONDecoder().decode(SavedSession.self, from: Data("{\"attendees\":[],\"results\":[]}".utf8))
         precondition(legacy.connections == nil, "Existing sessions must decode without connections")

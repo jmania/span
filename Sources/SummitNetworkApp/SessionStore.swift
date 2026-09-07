@@ -30,6 +30,14 @@ enum SessionStore {
         try encoder.encode(session).write(to: destination, options: .atomic)
     }
 
+    static func backupBeforeListMigration(at url: URL? = nil) throws {
+        let source = url ?? fileURL
+        let backup = source.appendingPathExtension("pre-list-first-backup")
+        guard FileManager.default.fileExists(atPath: source.path),
+              !FileManager.default.fileExists(atPath: backup.path) else { return }
+        try FileManager.default.copyItem(at: source, to: backup)
+    }
+
     static func clear(at url: URL? = nil) throws {
         let destination = url ?? fileURL
         if FileManager.default.fileExists(atPath: destination.path) {

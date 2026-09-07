@@ -30,7 +30,7 @@ LinkedIn prepares the file. Larger archives can take up to 24 hours; some arrive
 
 ## No matches, or a match looks wrong
 
-Confirm both inputs show as ready and the archive contains Connections. People may use different names on the two platforms. Matching uses names and available details; ambiguous identities need review. Second-degree connections require optional manual review.
+The list works without an archive. For suggestions, confirm the archive contains Connections. People may use different names or have changed jobs. Expand a suggested row and choose Different person to reject a wrong pairing; the attendee remains. Confirmed by you starts empty until you check identities. Use Refresh order after decisions to update the current filter.
 
 ## Report a problem
 
