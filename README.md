@@ -8,6 +8,15 @@ Span is a free Mac app that compares the event’s attendee list with your Linke
 
 ![Span showing first-degree connections using fictional demo data](Assets/screenshots/span-demo-1.png)
 
+<details>
+<summary>Watch a short overview (fictional demo data)</summary>
+
+![Captioned overview of Span’s connections, setup, and directory screens](Assets/screenshots/Span-overview.gif)
+
+[Download the 30-second overview video](Assets/screenshots/Span-overview.mp4)
+
+</details>
+
 Made by [Josh Jacobson](https://www.linkedin.com/in/josh--jacobson/) for fellow attendees. Built with help from OpenAI’s GPT-6 Astra in Codex.
 
 **[Releases and downloads](https://github.com/jmania/span/releases) · [Setup guide](docs/getting-started.md) · [Troubleshooting](docs/troubleshooting.md)**
