@@ -298,6 +298,10 @@ final class AppModel: ObservableObject {
 
     var canUndoReview: Bool { !reviewUndoStack.isEmpty }
 
+    func canUndoReview(for attendee: Attendee) -> Bool {
+        reviewUndoStack.last?.result.attendee.id == attendee.id
+    }
+
     func undoLastClassification() {
         guard let undo = reviewUndoStack.popLast(),
               let index = results.firstIndex(where: { $0.id == undo.result.id }) else { return }

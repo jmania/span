@@ -27,7 +27,23 @@ func checkIdentitySuggestions() async throws {
     precondition(kyle.candidates?.first?.otherAttendeeCount == 1)
     precondition(kyle.linkedInURL.isEmpty && kyle.confidence == nil)
     let candidate = kyle.candidates![0]
+    let list = SummitListPresentation(attendees: people, results: model.results, connectionCount: contacts.count)
+    precondition(list.suggested.count == 3 && list.others.map(\.name) == ["Alex Rivera"])
+    precondition(list.summary.contains("4 Summit attendees with 3 connections"))
+    precondition(list.summary.contains("3 attendees with possible matches"))
+    precondition(list.filtered(list.suggested, query: "  MAYA  ").map(\.name) == ["Maya Chen"])
+    precondition(list.filtered(list.others, query: "Design").count == 1)
+    precondition(list.filtered(list.suggested, query: "no such attendee").isEmpty)
+    let noArchive = SummitListPresentation(attendees: people, results: [], connectionCount: nil)
+    precondition(noArchive.suggested.isEmpty && noArchive.others.count == 4 && !noArchive.hasArchive)
+    precondition(!noArchive.summary.contains("compared"))
+    let zeroMatches = SummitListPresentation(attendees: people, results: [], connectionCount: 0)
+    precondition(zeroMatches.hasArchive && zeroMatches.summary.contains("0 attendees with possible matches"))
     model.decide(attendee: people[0], candidate: candidate, samePerson: false)
+    precondition(model.canUndoReview(for: people[0]) && !model.canUndoReview(for: people[1]))
+    let afterDismissal = SummitListPresentation(attendees: people, results: model.results, connectionCount: contacts.count)
+    precondition(afterDismissal.suggested.map(\.id) == list.suggested.map(\.id))
+    precondition(afterDismissal.summary == list.summary, "Review decisions must not shift the comparison summary")
     precondition(model.results[0].activeCandidates.count == 1 && model.results[0].degree == .review)
     precondition(model.attendees.count == 4)
     model.undoLastClassification()
@@ -36,6 +52,8 @@ func checkIdentitySuggestions() async throws {
     let other = model.results[0].activeCandidates[0]
     model.decide(attendee: people[0], candidate: other, samePerson: true)
     precondition(model.firstDegreeCount == 1 && model.results[0].linkedInURL.contains("other-kyle"))
+    let afterConfirmation = SummitListPresentation(attendees: people, results: model.results, connectionCount: contacts.count)
+    precondition(afterConfirmation.suggested.map(\.id) == list.suggested.map(\.id))
     model.undoLastClassification()
     precondition(model.firstDegreeCount == 0 && model.results[0].linkedInURL.isEmpty)
     model.decide(attendee: people[0], candidate: other, samePerson: true)
@@ -97,5 +115,5 @@ func checkIdentitySuggestions() async throws {
             precondition(suggested == (reference(left, right) >= 0.88), "Bounded matcher must agree with full edit distance")
         }
     }
-    print("PASS: identity ambiguity, pair decisions, undo, migration, persistence, duplicate candidates, URL safety, ranking, and honest exports")
+    print("PASS: identity ambiguity, pair decisions, row-scoped undo, stable list sections, search, archive-free/zero-match states, migration, persistence, URL safety, ranking, and honest exports")
 }

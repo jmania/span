@@ -30,7 +30,7 @@ LinkedIn prepares the file. Larger archives can take up to 24 hours; some arrive
 
 ## No matches, or a match looks wrong
 
-The list works without an archive. For suggestions, confirm the archive contains Connections. People may use different names or have changed jobs. Expand a suggested row and choose Different person to reject a wrong pairing; the attendee remains. Confirmed by you starts empty until you check identities. Use Refresh order after decisions to update the current filter.
+The list works without an archive. For suggestions, confirm the archive contains Connections. People may use different names or have changed jobs. Open a suggested row and choose Different person to reject a wrong pairing; the attendee remains in place. Only your explicit choice marks someone Confirmed by you. Dismissed suggestions remain available to revisit. No suggestion does not mean you are not connected.
 
 ## Report a problem
 

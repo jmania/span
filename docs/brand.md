@@ -20,8 +20,8 @@ The supplied raster illustrations are concept explorations made with the built-i
 
 ## Voice and product truth
 
-Use concrete, understated language. Explain what helps the attendee make a decision. Show Josh’s credit quietly in the header and an optional invitation after the useful results.
+Use concrete, understated language. Explain what helps the attendee make a decision. Show Josh’s credit quietly in the header; keep promotional invitations out of the attendee list.
 
-Span builds an attendee list and compares it locally with the user's LinkedIn export to suggest possible identities. No first-degree status is automatically confirmed. Say Possible connection, View possible connection’s profile, and Confirmed by you. Never imply automatic mutual-connection discovery or that a candidate URL belongs to the attendee. The bridge is a brand metaphor, not a claim of additional data access.
+Span builds an attendee list and compares it locally with the user's LinkedIn export to suggest possible identities. No first-degree status is automatically confirmed. The list heading is “Summit attendees you may know.” Say “Possible match in your LinkedIn connections,” “Open your connection’s profile,” “Search LinkedIn for the attendee,” and “Confirmed by you.” Place each link beside the source it refers to and use understated ink-colored links, not warning red. Never imply automatic mutual-connection discovery or that a candidate URL belongs to the attendee. The bridge is a brand metaphor, not a claim of additional data access.
 
 Span is an independent project. References to the event explain compatibility only; do not use Lenny branding, event logos, or wording that implies official affiliation.

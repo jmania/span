@@ -26,7 +26,7 @@ Configure these repository secrets under GitHub Settings → Secrets and variabl
 
 Enter credentials directly in the relevant interfaces. Never commit them or paste private keys or passwords into issues or chat.
 
-Once configured, create and push a matching tag such as `v0.5.0`. Review the draft and test its downloaded build on another Mac before publishing. Update the README and setup guide’s release-status notice when the installer is available.
+Once configured, create and push a matching tag such as `v0.5.1`. Review the draft and test its downloaded build on another Mac before publishing. Update the README and setup guide’s release-status notice when the installer is available.
 
 [Apple Developer ID](https://developer.apple.com/developer-id/) · [Apple notarization](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
 
