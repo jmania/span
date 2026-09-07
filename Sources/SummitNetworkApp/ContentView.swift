@@ -10,12 +10,13 @@ struct ContentView: View {
     @State private var dropTargeted = false
     @State private var confirmingReset = false
 
-    private let accent = Color(red: 0.91, green: 0.36, blue: 0.22)
-    private let ink = Color(red: 0.08, green: 0.19, blue: 0.14)
+    @State private var creatorCardDismissed = false
+    private let accent = Brand.accent
+    private let ink = Brand.ink
 
     var body: some View {
         ZStack {
-            Color(red: 0.94, green: 0.96, blue: 0.93).ignoresSafeArea()
+            Brand.paper.ignoresSafeArea()
             VStack(spacing: 0) {
                 header
                 Divider().opacity(0.5)
@@ -31,6 +32,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .preferredColorScheme(.light)
         .tint(accent)
         .alert("Something needs attention", isPresented: Binding(
             get: { model.errorMessage != nil },
@@ -51,16 +53,18 @@ struct ContentView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "person.3.sequence.fill")
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(accent)
+            BrandMark()
             VStack(alignment: .leading, spacing: 1) {
-                Text("Summit Network").font(.headline).foregroundStyle(ink)
-                Text("Your conference connections, privately matched").font(.caption).foregroundStyle(.secondary)
+                Text(Brand.name).font(.system(size: 19, weight: .bold, design: .rounded)).foregroundStyle(ink)
+                Text(Brand.tagline).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             if !model.statusMessage.isEmpty {
                 Text(model.statusMessage).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
+            if let url = Brand.creatorURL {
+                Link("Made by \(Brand.creatorName)", destination: url)
+                    .font(.caption).foregroundStyle(ink)
             }
             Button("Start over", role: .destructive) { confirmingReset = true }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
@@ -73,7 +77,7 @@ struct ContentView: View {
             Button("Delete saved session and start over", role: .destructive) { model.startOver() }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("This removes the attendee list and review decisions saved by Summit Network on this Mac.")
+            Text("This removes the attendee list and review decisions saved by Small World on this Mac.")
         }
     }
 
@@ -81,9 +85,11 @@ struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Find the people already close to your network")
+                    Text("A LITTLE PREP. A BETTER SUMMIT.")
+                        .font(.system(size: 11, weight: .bold)).tracking(2).foregroundStyle(accent)
+                    Text("Good conversations start\nwith a familiar face.")
                         .font(.system(size: 34, weight: .bold, design: .rounded)).foregroundStyle(ink)
-                    Text("Summit Network reads the attendee directory you can already access, then matches it against your own LinkedIn connections export. Nothing is uploaded.")
+                    Text("Find people you already know at Lenny & Friends, then make a shortlist of people you’d like to meet. Your attendee list and LinkedIn export stay on your Mac.")
                         .font(.title3).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -122,7 +128,7 @@ struct ContentView: View {
 
     private var prerequisiteCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Before you begin").font(.headline).foregroundStyle(ink)
+            Text("01 / Get the guest list").font(.headline).foregroundStyle(ink)
             statusRow("Lenny & Friends installed", ready: model.appInstalled)
             statusRow("App is open", ready: model.appRunning)
             statusRow("Attendee access allowed", ready: model.accessibilityTrusted)
@@ -143,13 +149,13 @@ struct ContentView: View {
 
     private var privacyCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Label("Private by design", systemImage: "lock.shield.fill")
+            Label("Your network stays yours", systemImage: "lock.shield.fill")
                 .font(.headline).foregroundStyle(ink)
-            Text("Your attendee list, LinkedIn export, and decisions stay on this Mac.")
-            privacyRow("No account password")
-            privacyRow("No browser scraping")
-            privacyRow("No cloud upload")
-            privacyRow("No automatic messages")
+            Text("Bring your own LinkedIn connections export. We do the comparison right here.")
+            privacyRow("Local matching")
+            privacyRow("You choose who to meet")
+            privacyRow("Pick up where you left off")
+            privacyRow("Free and open source")
             Spacer(minLength: 0)
         }
         .foregroundStyle(.secondary).cardStyle().frame(maxWidth: .infinity, minHeight: 265, alignment: .top)
@@ -160,7 +166,9 @@ struct ContentView: View {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 46)).foregroundStyle(.green)
             Text("\(model.attendees.count) attendees collected")
                 .font(.system(size: 30, weight: .bold, design: .rounded)).foregroundStyle(ink)
-            Text("Now add the archive LinkedIn gave you. You can drop the ZIP directly—there is no need to find Connections.csv inside it.")
+            Text("02 / Find your familiar faces")
+                .font(.headline).foregroundStyle(accent)
+            Text("Drop in the archive LinkedIn gave you. We’ll find the connections file inside and compare it with the guest list.")
                 .multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 560)
 
             VStack(spacing: 12) {
@@ -187,6 +195,7 @@ struct ContentView: View {
     }
 
     private var resultsView: some View {
+        ScrollView {
         VStack(spacing: 20) {
             HStack(spacing: 12) {
                 metric("First degree", model.firstDegreeCount, color: .green)
@@ -208,13 +217,44 @@ struct ContentView: View {
             }
 
             HStack {
-                Text("Every decision is saved automatically on this Mac.").font(.caption).foregroundStyle(.secondary)
+                Text(model.isDemo ? "Sample data — explore freely. Nothing is saved." : "Every decision is saved automatically on this Mac.").font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("Export spreadsheet…") { model.exportResults() }
                     .buttonStyle(.borderedProminent).controlSize(.large)
             }
+            if !creatorCardDismissed, let url = Brand.creatorURL {
+                creatorCard(url)
+            }
         }
         .padding(28)
+        }
+    }
+
+    private func creatorCard(_ url: URL) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            Image(systemName: "hand.wave.fill")
+                .font(.system(size: 27)).foregroundStyle(accent).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("One more connection?").font(.headline).foregroundStyle(ink)
+                Text("I’m \(Brand.creatorName). I built this to make meeting people at the summit a little easier. If it helped, add me on LinkedIn and come say hello. I promise I’m easier to find than the export button.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Link(destination: url) {
+                    Label("Find me on LinkedIn", systemImage: "arrow.up.right")
+                }
+                .buttonStyle(.bordered).tint(ink)
+            }
+            Spacer(minLength: 0)
+            Button { creatorCardDismissed = true } label: {
+                Image(systemName: "xmark").font(.caption)
+            }
+            .buttonStyle(.plain).foregroundStyle(.secondary)
+            .accessibilityLabel("Dismiss creator invitation")
+        }
+        .padding(20).frame(maxWidth: .infinity, alignment: .leading)
+        .background(accent.opacity(0.055))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(accent.opacity(0.16)))
     }
 
     private func reviewCard(_ result: NetworkResult) -> some View {
@@ -237,7 +277,7 @@ struct ContentView: View {
                 Button("Open LinkedIn") { model.openLinkedIn() }
                 Spacer()
             }
-            Text("Paste the text into LinkedIn’s normal search, check the connection badge, then choose a result below. Summit Network never reads or controls LinkedIn.")
+            Text("Paste the text into LinkedIn’s normal search, check the connection badge, then choose a result below. Small World never reads or controls LinkedIn.")
                 .font(.caption).foregroundStyle(.secondary)
             HStack(spacing: 10) {
                 classificationButton("Second degree", icon: "person.2.fill", degree: .second)

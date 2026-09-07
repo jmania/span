@@ -18,6 +18,7 @@ final class AppModel: ObservableObject {
     @Published var extractionCount = 0
     @Published var statusMessage = ""
     @Published var errorMessage: String?
+    @Published var isDemo = false
 
     init() {
         if let saved = try? SessionStore.load() {
@@ -156,10 +157,15 @@ final class AppModel: ObservableObject {
         results = []
         extractionCount = 0
         statusMessage = ""
+        if isDemo {
+            isDemo = false
+            return
+        }
         try? SessionStore.clear()
     }
 
     func loadDemo() {
+        isDemo = true
         let people = [
             Attendee(name: "Maya Chen", details: "Product lead at Example Corp", sourceLabel: "Maya Chen, Product lead at Example Corp"),
             Attendee(name: "Jordan Patel", details: "Founder at Northstar", sourceLabel: "Jordan Patel, Founder at Northstar"),
@@ -177,6 +183,7 @@ final class AppModel: ObservableObject {
     }
 
     private func saveSession() throws {
+        guard !isDemo else { return }
         try SessionStore.save(SavedSession(attendees: attendees, results: results))
     }
 }

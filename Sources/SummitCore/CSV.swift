@@ -64,7 +64,7 @@ public enum CSV {
                     quoted = true
                 case ",":
                     finishField()
-                case "\n":
+                case "\n", "\r\n":
                     finishRow()
                 case "\r":
                     finishRow()

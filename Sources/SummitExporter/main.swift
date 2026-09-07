@@ -59,18 +59,21 @@ Options:
   -h, --help             Show this help
 """
 
+func reportProgress(_ message: String) {
+    FileHandle.standardError.write(Data(message.utf8))
+}
+
 do {
     let options = try parseOptions()
     let client = try AXClient(bundleIdentifier: options.bundleIdentifier)
-    fputs("Reading attendees… keep the attendee window open.\n", stderr)
+    reportProgress("Reading attendees… keep the attendee window open.\n")
     let attendees = try client.extractAttendees(
         maximum: options.maximum,
         pauseMilliseconds: options.pauseMilliseconds
     ) { count in
-        fputs("\rFound \(count) unique attendees", stderr)
-        fflush(stderr)
+        reportProgress("\rFound \(count) unique attendees")
     }
-    fputs("\n", stderr)
+    reportProgress("\n")
 
     let timestamp = ISO8601DateFormatter().string(from: Date())
     var csv = "name,details,source_label,extracted_at\n"
@@ -81,6 +84,6 @@ do {
     try csv.write(toFile: options.output, atomically: true, encoding: .utf8)
     print("Wrote \(attendees.count) attendees to \(options.output)")
 } catch {
-    fputs("Error: \(error.localizedDescription)\n", stderr)
+    reportProgress("Error: \(error.localizedDescription)\n")
     exit(1)
 }
