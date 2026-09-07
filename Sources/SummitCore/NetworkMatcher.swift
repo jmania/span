@@ -164,13 +164,14 @@ public enum NetworkMatcher {
     public static func match(attendees: [Attendee], connections: [Connection]) -> MatchSummary {
         var seen = Set<String>()
         let unique = connections.filter { seen.insert($0.identityKey).inserted }
-        let prepared = unique.map { ($0, normalizedName($0.name), meaningfulWords($0.company)) }
+        let prepared = unique.map { ($0, Array(normalizedName($0.name)), meaningfulWords($0.company)) }
         var results = attendees.map { attendee -> NetworkResult in
             let wanted = normalizedName(attendee.name)
+            let wantedCharacters = Array(wanted)
             let eventWords = meaningfulWords(attendee.details)
             let candidates = prepared.compactMap { item -> MatchCandidate? in
                 let (connection, name, companyWords) = item
-                let similarity = nameSimilarity(wanted, name)
+                let similarity = nameSimilarity(wantedCharacters, name)
                 guard !wanted.isEmpty, similarity >= 0.88 else { return nil }
                 let companyMatches = !companyWords.isEmpty && companyWords.isSubset(of: eventWords)
                 let reason = similarity == 1
@@ -247,22 +248,32 @@ public func normalizedName(_ value: String) -> String {
     return words.map { $0.lowercased() }.joined(separator: " ")
 }
 
-private func nameSimilarity(_ left: String, _ right: String) -> Double {
-    if left == right { return 1 }
-    let a = Array(left), b = Array(right)
+private func nameSimilarity(_ a: [Character], _ b: [Character]) -> Double {
+    if a == b { return 1 }
     guard !a.isEmpty, !b.isEmpty else { return 0 }
-    guard Double(abs(a.count - b.count)) / Double(max(a.count, b.count)) <= 0.12 else { return 0 }
+    let length = max(a.count, b.count)
+    let limit = Int((Double(length) * 0.12 + 0.000000001).rounded(.down))
+    guard abs(a.count - b.count) <= limit else { return 0 }
+    // Banded Levenshtein: suggestions require >= 0.88, so paths outside
+    // this edit-distance band cannot qualify. Exit when all paths exceed it.
     var previous = Array(0...b.count)
     for (i, leftCharacter) in a.enumerated() {
-        var current = [i + 1] + Array(repeating: 0, count: b.count)
-        for (j, rightCharacter) in b.enumerated() {
-            current[j + 1] = [
-                current[j] + 1,
-                previous[j + 1] + 1,
-                previous[j] + (leftCharacter == rightCharacter ? 0 : 1)
+        let row = i + 1
+        var current = Array(repeating: limit + 1, count: b.count + 1)
+        current[0] = row
+        var minimum = current[0]
+        let start = max(1, row - limit), end = min(b.count, row + limit)
+        guard start <= end else { return 0 }
+        for column in start...end {
+            current[column] = [
+                current[column - 1] + 1,
+                previous[column] + 1,
+                previous[column - 1] + (leftCharacter == b[column - 1] ? 0 : 1)
             ].min()!
+            minimum = min(minimum, current[column])
         }
+        if minimum > limit { return 0 }
         previous = current
     }
-    return 1 - Double(previous[b.count]) / Double(max(a.count, b.count))
+    return 1 - Double(previous[b.count]) / Double(length)
 }

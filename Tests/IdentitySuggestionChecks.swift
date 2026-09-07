@@ -76,5 +76,26 @@ func checkIdentitySuggestions() async throws {
     precondition(NetworkMatcher.match(attendees: [people[0]], connections: [generic]).results[0].candidates?.first?.rank == 1)
     let fuzzy = Attendee(name: "Kylie Miller", details: "", sourceLabel: "Kylie Miller")
     precondition(NetworkMatcher.match(attendees: [fuzzy], connections: contacts).firstDegreeCount == 0)
+    let variants = ["Alexandria Montgomery", "Alexandra Montgomery", "Alexandria Montgomeri", "Alexander Montgomery", "Alexandria Montgomer", "Alxandria Montgomri", "Kyle Miller", "Kylie Miller", "José García", "Jose Garcia", "Jo Smith", "Jon Smith"]
+    func reference(_ left: String, _ right: String) -> Double {
+        let a = Array(normalizedName(left)), b = Array(normalizedName(right))
+        var previous = Array(0...b.count)
+        for (i, letter) in a.enumerated() {
+            var row = [i + 1] + Array(repeating: 0, count: b.count)
+            for (j, other) in b.enumerated() {
+                row[j + 1] = min(row[j] + 1, previous[j + 1] + 1, previous[j] + (letter == other ? 0 : 1))
+            }
+            previous = row
+        }
+        return 1 - Double(previous[b.count]) / Double(max(a.count, b.count))
+    }
+    for left in variants {
+        for right in variants {
+            let person = Attendee(name: left, details: "", sourceLabel: left)
+            let contact = Connection(name: right, company: "", position: "", url: "", email: "")
+            let suggested = NetworkMatcher.match(attendees: [person], connections: [contact]).results[0].hasSuggestion
+            precondition(suggested == (reference(left, right) >= 0.88), "Bounded matcher must agree with full edit distance")
+        }
+    }
     print("PASS: identity ambiguity, pair decisions, undo, migration, persistence, duplicate candidates, URL safety, ranking, and honest exports")
 }
