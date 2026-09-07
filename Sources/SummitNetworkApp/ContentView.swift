@@ -4,16 +4,6 @@ import SummitCore
 #endif
 import UniformTypeIdentifiers
 
-private enum DirectoryFilter: String, CaseIterable {
-    case all = "Everyone"
-    case possible = "Possible connections"
-    case confirmed = "Confirmed by you"
-}
-private enum DirectorySort: String, CaseIterable {
-    case suggestions = "Possible connections first"
-    case alphabetical = "A–Z"
-}
-
 struct ContentView: View {
     @StateObject private var model = AppModel()
     @State private var showingImporter = false
@@ -22,15 +12,14 @@ struct ContentView: View {
     @State private var showingAccessHelp = false
     @State private var showingLinkedInHelp = false
     @State private var showingInputs = false
-    @State private var directoryFilter: DirectoryFilter = .all
     @State private var directoryQuery = ""
-    @State private var directorySort: DirectorySort = .suggestions
-    @State private var visibleIDs: [UUID] = []
+    @State private var showingSearch = false
+    @FocusState private var searchFocused: Bool
+    @State private var listPresentation = SummitListPresentation(attendees: [], results: [], connectionCount: nil)
     @State private var expandedIDs = Set<UUID>()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let prerequisiteTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
-    @State private var creatorCardDismissed = false
     private let accent = Brand.accent
     private let ink = Brand.ink
 
@@ -343,250 +332,261 @@ struct ContentView: View {
     }
 
     private var resultsView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Your Summit list").font(.system(size: 28, weight: .bold, design: .rounded)).foregroundStyle(ink)
-                    Text("\(model.attendees.count) attendees · \(model.possibleCount) with possible connections · \(model.firstDegreeCount) confirmed by you")
+        let suggestions = listPresentation.filtered(listPresentation.suggested, query: directoryQuery)
+        let others = listPresentation.filtered(listPresentation.others, query: directoryQuery)
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 18) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(model.connections == nil ? "Summit attendees" : "Summit attendees you may know")
+                        .font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(ink)
+                    Text(listPresentation.summary)
                         .font(.subheadline).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer()
-                Button("Export list…", action: model.exportResults).buttonStyle(.bordered)
+                Spacer(minLength: 0)
+                Button {
+                    showingSearch.toggle()
+                    if showingSearch { searchFocused = true } else { directoryQuery = "" }
+                } label: {
+                    Label(showingSearch ? "Close search" : "Search", systemImage: showingSearch ? "xmark" : "magnifyingglass")
+                }
+                .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
+                .keyboardShortcut("f", modifiers: .command)
+                .padding(.top, 5)
             }
-            if model.isDemo {
-                Text("DEMO · FICTIONAL ATTENDEES").font(.caption.bold()).foregroundStyle(accent)
+            if showingSearch {
+                TextField("Search attendees by name, company, or title", text: $directoryQuery)
+                    .textFieldStyle(.roundedBorder).focused($searchFocused)
+                    .accessibilityLabel("Search attendees")
+                    .onExitCommand { directoryQuery = ""; showingSearch = false }
             }
             if model.connections == nil {
-                HStack {
-                    Text("Your list is ready. Add your LinkedIn export to see possible connections.")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                    Spacer()
-                    Button("Add export…") { showingImporter = true }.disabled(model.isImporting)
-                }.padding(12).background(.white.opacity(0.8)).cornerRadius(12)
-            } else {
-                Text("Suggestions are clues, not proof. Compare the details and confirm only people you recognize.")
-                    .font(.subheadline).foregroundStyle(.secondary)
+                Button("Add LinkedIn export…") { showingImporter = true }
+                    .buttonStyle(.plain).foregroundStyle(ink).disabled(model.isImporting)
             }
-            HStack(spacing: 12) {
-                TextField("Search attendees by name, company, or title", text: $directoryQuery)
-                    .textFieldStyle(.roundedBorder)
-                    .accessibilityLabel("Search attendees")
-                Picker("Sort", selection: $directorySort) {
-                    ForEach(DirectorySort.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                }.frame(width: 245)
-            }
-            HStack(spacing: 8) {
-                ForEach(DirectoryFilter.allCases, id: \.self) { filter in
-                    Button(filter.rawValue) {
-                        directoryFilter = filter
-                        refreshVisibleRows()
-                    }
-                    .buttonStyle(.plain)
-                    .font(.subheadline.weight(directoryFilter == filter ? .semibold : .regular))
-                    .foregroundStyle(directoryFilter == filter ? ink : .secondary)
-                    .padding(.horizontal, 12).padding(.vertical, 7)
-                    .background(directoryFilter == filter ? ink.opacity(0.1) : .clear)
-                    .clipShape(Capsule())
-                    .accessibilityAddTraits(directoryFilter == filter ? .isSelected : [])
-                }
-                Spacer()
-                Text("\(visibleIDs.count) shown").font(.caption).foregroundStyle(.secondary)
-            }
-            HStack {
-                Text(model.lastClassificationMessage ?? "Your decisions are saved here. There’s no need to review everyone.")
-                    .font(.caption).foregroundStyle(ink).lineLimit(2)
-                    .accessibilityLabel(model.lastClassificationMessage ?? "Review is optional")
-                Spacer()
-                Button("Undo", action: model.undoLastClassification).buttonStyle(.link).disabled(!model.canUndoReview)
-                Button("Refresh order", action: refreshVisibleRows).buttonStyle(.link)
-                    .help("Apply the current filter and order again. Decisions never move rows automatically.")
-            }.frame(height: 32)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    if visibleIDs.isEmpty {
-                        VStack(alignment: .leading, spacing: 7) {
-                            Text("No attendees in this view.").font(.headline)
-                            Text(directoryFilter == .confirmed ? "People appear here after you confirm their identity." : "Try another search or choose Everyone. No suggestion does not mean you aren’t connected.")
-                                .foregroundStyle(.secondary)
-                        }.padding(24)
+                    if suggestions.isEmpty && others.isEmpty {
+                        Text("No attendees match this search.").foregroundStyle(.secondary).padding(20)
                     }
-                    ForEach(visibleAttendees) { attendee in
-                        directoryRow(attendee)
-                        Divider().padding(.horizontal, 16)
+                    if !suggestions.isEmpty {
+                        attendeeSection(suggestions)
                     }
-                }
-                .background(.white.opacity(0.88))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                if !creatorCardDismissed, let url = Brand.creatorURL {
-                    creatorCard(url).padding(.top, 16)
+                    if !others.isEmpty {
+                        if listPresentation.hasArchive {
+                            Text("Other attendees").font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+                                .padding(.top, suggestions.isEmpty ? 0 : 22).padding(.bottom, 10)
+                        }
+                        attendeeSection(others)
+                    }
+                    HStack {
+                        if model.isDemo {
+                            Text("DEMO · FICTIONAL ATTENDEES").font(.caption2).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button("Export list…", action: model.exportResults)
+                            .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
+                    }.padding(.vertical, 18)
                 }
             }
         }
         .padding(24)
-        .onAppear(perform: refreshVisibleRows)
-        .onChange(of: directoryQuery) { _ in refreshVisibleRows() }
-        .onChange(of: directorySort) { _ in refreshVisibleRows() }
-        .onChange(of: model.inputRevision) { _ in refreshVisibleRows() }
+        .onAppear(perform: refreshList)
+        .onChange(of: model.inputRevision) { _ in refreshList() }
     }
 
-    private var visibleAttendees: [Attendee] {
-        let lookup = Dictionary(model.attendees.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        return visibleIDs.compactMap { lookup[$0] }
+    private func refreshList() {
+        listPresentation = SummitListPresentation(attendees: model.attendees, results: model.results,
+                                                  connectionCount: model.connections?.count)
     }
 
-    // Freeze membership and order during decisions. Explicit filter/search/sort changes refresh it.
-    private func refreshVisibleRows() {
-        let query = normalizedName(directoryQuery)
-        let lookup = Dictionary(model.results.map { ($0.attendee.id, $0) }, uniquingKeysWith: { first, _ in first })
-        visibleIDs = model.attendees.filter { attendee in
-            let result = lookup[attendee.id]
-            if directoryFilter == .possible && result?.hasSuggestion != true { return false }
-            if directoryFilter == .confirmed && result?.isConfirmed != true { return false }
-            return query.isEmpty || normalizedName(attendee.name + " " + attendee.details).contains(query)
-        }.sorted { left, right in
-            if directorySort == .suggestions {
-                let l = lookup[left.id], r = lookup[right.id]
-                let ls = l?.hasSuggestion == true ? (l?.activeCandidates.first?.rank ?? 0) : -1
-                let rs = r?.hasSuggestion == true ? (r?.activeCandidates.first?.rank ?? 0) : -1
-                if ls != rs { return ls > rs }
+    private func attendeeSection(_ people: [Attendee]) -> some View {
+        LazyVStack(alignment: .leading, spacing: 0) {
+            ForEach(people) { attendee in
+                directoryRow(attendee)
+                if attendee.id != people.last?.id { Divider().padding(.horizontal, 20) }
             }
-            if left.name != right.name { return left.name.localizedStandardCompare(right.name) == .orderedAscending }
-            if left.details != right.details { return left.details < right.details }
-            return left.id.uuidString < right.id.uuidString
-        }.map(\.id)
+        }
+        .background(.white.opacity(0.88))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(ink.opacity(0.08)))
+    }
+
+    private func toggleAttendee(_ id: UUID) {
+        if expandedIDs.contains(id) { expandedIDs.remove(id) } else { expandedIDs.insert(id) }
     }
 
     private func directoryRow(_ attendee: Attendee) -> some View {
         let result = model.result(for: attendee)
         let expanded = expandedIDs.contains(attendee.id)
+        let candidates = result?.candidates ?? []
         return VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top, spacing: 12) {
-                Button {
-                    if expanded { expandedIDs.remove(attendee.id) } else { expandedIDs.insert(attendee.id) }
-                } label: {
-                    HStack(alignment: .top, spacing: 12) {
-                        Image(systemName: expanded ? "chevron.down" : "chevron.right")
-                            .font(.caption.weight(.semibold)).frame(width: 12).padding(.top, 4)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(attendee.name).font(.headline).foregroundStyle(ink)
-                            Text(attendee.details.isEmpty ? "No company or title supplied" : attendee.details)
-                                .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.leading)
-                            Text(rowLabel(result)).font(.caption.weight(.medium))
-                                .foregroundStyle(result?.isConfirmed == true ? ink : .secondary)
-                        }
-                    }.contentShape(Rectangle())
-                }.buttonStyle(.plain)
-                .accessibilityLabel("\(expanded ? "Collapse" : "Expand") \(attendee.name), \(rowLabel(result))")
-                Spacer(minLength: 10)
-                Button("Search LinkedIn") { model.openLinkedInSearch(for: attendee) }
-                    .buttonStyle(.bordered).controlSize(.small)
-                Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(attendee.name + " " + attendee.details, forType: .string)
-                } label: { Image(systemName: "doc.on.doc") }
-                    .buttonStyle(.plain).foregroundStyle(.secondary)
-                    .help("Copy search text").accessibilityLabel("Copy search text for \(attendee.name)")
-            }
-            if expanded {
-                if let result {
-                        HStack {
-                            Text(result.isConfirmed ? "Identity confirmed by you." : "Event details above; your possible connections below.").font(.caption)
-                            if result.isConfirmed, let url = linkedInProfileURL(result.linkedInURL), !model.isDemo {
-                                Link("View confirmed profile", destination: url)
-                            }
-                            Spacer()
-                            Button("Remove confirmation") { model.classify(attendee: attendee, as: .review) }.buttonStyle(.link)
-                                .opacity(result.isConfirmed ? 1 : 0).disabled(!result.isConfirmed)
-                                .accessibilityHidden(!result.isConfirmed)
-                        }.frame(height: 24)
-                    if !(result.candidates ?? []).isEmpty {
-                        Text("FROM YOUR LINKEDIN EXPORT").font(.caption2.bold()).tracking(1.2).foregroundStyle(accent)
-                        ForEach(result.candidates ?? []) { candidate in
-                            candidateCard(candidate, result: result)
-                        }
-                    } else {
-                        Text(model.connections == nil ? "Add your LinkedIn export to look for possible connections." : "No candidate in this export. You may still be connected—search LinkedIn to find this attendee.")
-                            .font(.subheadline).foregroundStyle(.secondary)
-                    }
-                        Button("I’ve checked LinkedIn — confirm this attendee") { model.classify(attendee: attendee, as: .first) }
-                            .buttonStyle(.link).font(.caption)
-                            .opacity(result.isConfirmed ? 0 : 1).disabled(result.isConfirmed).accessibilityHidden(result.isConfirmed)
-                        Button("Restore dismissed suggestions") { model.restoreSuggestions(for: attendee) }
-                            .buttonStyle(.link).font(.caption)
-                            .opacity((result.rejectedCandidateIDs ?? []).isEmpty ? 0 : 1)
-                            .disabled((result.rejectedCandidateIDs ?? []).isEmpty)
-                            .accessibilityHidden((result.rejectedCandidateIDs ?? []).isEmpty)
-                    if result.reviewedAt != nil && result.degree != .first && result.degree != .review {
-                        Text("Previously marked by you: \(result.degree.label).").font(.caption).foregroundStyle(.secondary)
-                    }
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 20) {
+                    attendeeHeading(attendee)
+                    Spacer(minLength: 12)
+                    if expanded { attendeeSearch(attendee) }
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    attendeeHeading(attendee)
+                    if expanded { attendeeSearch(attendee) }
                 }
             }
-        }.padding(16)
+            if let result, !candidates.isEmpty || result.isConfirmed {
+                VStack(alignment: .leading, spacing: 7) {
+                    Button { toggleAttendee(attendee.id) } label: {
+                        HStack(spacing: 6) {
+                            Text(rowLabel(result)).multilineTextAlignment(.leading)
+                            Image(systemName: expanded ? "chevron.up" : "chevron.down").font(.caption2)
+                        }.font(.caption.weight(.medium)).foregroundStyle(connectionGreen)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(expanded ? "Collapse" : "Review") connections for \(attendee.name): \(rowLabel(result))")
+                    if expanded {
+                        ForEach(candidates) { candidate in
+                            candidateDetails(candidate, result: result)
+                        }
+                        if candidates.isEmpty {
+                            Text("You confirmed this attendee independently.").font(.caption).foregroundStyle(.secondary)
+                        }
+                        if result.isConfirmed && candidates.isEmpty {
+                            Button("Remove confirmation") { model.classify(attendee: attendee, as: .review) }
+                                .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
+                        }
+                    } else {
+                        Text(candidateSummary(result)).font(.caption).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.leading, 14)
+                .overlay(alignment: .leading) { Rectangle().fill(connectionGreen.opacity(0.3)).frame(width: 2) }
+                .padding(.leading, 3)
+            } else if expanded {
+                Text(model.connections == nil
+                     ? "Add your LinkedIn export to look for possible connections."
+                     : "No possible match in this export. You may still be connected.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Button("I checked LinkedIn — same person") { model.classify(attendee: attendee, as: .first) }
+                    .buttonStyle(.plain).font(.caption).foregroundStyle(ink)
+            }
+        }
+        .padding(20)
+        .contextMenu {
+            Button("Search LinkedIn for the attendee") { model.openLinkedInSearch(for: attendee) }
+            Button("Copy attendee details") {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(attendee.name + " " + attendee.details, forType: .string)
+            }
+            if model.canUndoReview(for: attendee) {
+                Button("Undo last change for this attendee", action: model.undoLastClassification)
+            }
+            if result?.isConfirmed == true {
+                Button("Remove confirmation") { model.classify(attendee: attendee, as: .review) }
+            }
+        }
     }
 
-    private func rowLabel(_ result: NetworkResult?) -> String {
-        guard let result else { return "Attendee from the event" }
+    private let connectionGreen = Color(red: 0.22, green: 0.43, blue: 0.30)
+
+    private func attendeeHeading(_ attendee: Attendee) -> some View {
+        Button { toggleAttendee(attendee.id) } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(attendee.name).font(.headline).foregroundStyle(ink)
+                Text(attendee.details.isEmpty ? "No company or title supplied" : attendee.details)
+                    .font(.subheadline).foregroundStyle(.secondary)
+            }.multilineTextAlignment(.leading).contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(expandedIDs.contains(attendee.id) ? "Collapse" : "Open") \(attendee.name), \(attendee.details)")
+    }
+
+    private func attendeeSearch(_ attendee: Attendee) -> some View {
+        Button { model.openLinkedInSearch(for: attendee) } label: {
+            Label("Search LinkedIn for the attendee", systemImage: "arrow.up.right")
+        }
+        .buttonStyle(.plain).font(.caption).foregroundStyle(ink).fixedSize()
+        .help("Search for \(attendee.name) using the details from the summit.")
+    }
+
+    private func rowLabel(_ result: NetworkResult) -> String {
         if result.isConfirmed { return "Confirmed by you" }
-        if result.hasSuggestion { return "Possible LinkedIn connection · \(result.activeCandidates.count) candidate\(result.activeCandidates.count == 1 ? "" : "s")" }
-        if !(result.rejectedCandidateIDs ?? []).isEmpty { return "Suggestion dismissed · identity unconfirmed" }
-        return "Attendee from the event"
+        let count = result.activeCandidates.count
+        if count == 0 { return "You marked these as different people" }
+        return count == 1 ? "Possible match in your LinkedIn connections"
+            : "\(count) possible matches in your LinkedIn connections"
     }
 
-    private func candidateCard(_ candidate: MatchCandidate, result: NetworkResult) -> some View {
+    private func candidateSummary(_ result: NetworkResult) -> String {
+        let candidates: [MatchCandidate]
+        if let confirmedID = result.confirmedCandidateID,
+           let confirmed = result.candidates?.first(where: { $0.id == confirmedID }) {
+            candidates = [confirmed]
+        } else {
+            candidates = result.activeCandidates.isEmpty ? (result.candidates ?? []) : result.activeCandidates
+        }
+        let summaries = candidates.prefix(2).map {
+            [$0.connection.name, $0.connection.position, $0.connection.company].filter { !$0.isEmpty }.joined(separator: " · ")
+        }
+        return summaries.joined(separator: " / ") + (candidates.count > 2 ? " · +\(candidates.count - 2) more" : "")
+    }
+
+    private func candidateDetails(_ candidate: MatchCandidate, result: NetworkResult) -> some View {
         let rejected = (result.rejectedCandidateIDs ?? []).contains(candidate.id)
         let confirmed = result.isConfirmed && result.confirmedCandidateID == candidate.id
         return VStack(alignment: .leading, spacing: 8) {
-            Text(candidate.connection.name).font(.subheadline.weight(.semibold)).foregroundStyle(ink)
-            Text(candidate.connection.details.isEmpty ? "No company or title in your export" : candidate.connection.details)
-                .font(.subheadline).foregroundStyle(.secondary)
-            Text(candidate.reason).font(.caption).foregroundStyle(.secondary)
-            if candidate.otherAttendeeCount > 0 {
-                Text("This contact is also a possibility for \(candidate.otherAttendeeCount) other attendee\(candidate.otherAttendeeCount == 1 ? "" : "s").")
-                    .font(.caption).foregroundStyle(accent)
-            }
-            HStack {
-                if let url = linkedInProfileURL(candidate.connection.url), !model.isDemo {
-                    Link("View possible connection’s profile", destination: url).font(.subheadline)
-                } else {
-                    Text(model.isDemo ? "Profile link · fictional demo" : "No LinkedIn profile URL in this export")
-                        .font(.caption).foregroundStyle(.secondary)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 20) {
+                    candidateIdentity(candidate)
+                    Spacer(minLength: 12)
+                    candidateProfile(candidate)
                 }
-                Spacer()
-                Button("Same person") { model.decide(attendee: result.attendee, candidate: candidate, samePerson: true) }
-                    .buttonStyle(.bordered).disabled(confirmed)
-                Button("Different person") { model.decide(attendee: result.attendee, candidate: candidate, samePerson: false) }
-                    .buttonStyle(.bordered).disabled(rejected)
+                VStack(alignment: .leading, spacing: 7) {
+                    candidateIdentity(candidate)
+                    candidateProfile(candidate)
+                }
             }
-            Text(confirmed ? "Confirmed by you" : (rejected ? "Dismissed — attendee remains in your list" : "Same person? Compare the details or search LinkedIn."))
-                .font(.caption).foregroundStyle(ink).frame(height: 18, alignment: .leading)
-        }.padding(14).background(Brand.paper).cornerRadius(12)
+            if candidate.otherAttendeeCount > 0 {
+                Text("This connection could also match \(candidate.otherAttendeeCount) other attendee\(candidate.otherAttendeeCount == 1 ? "" : "s").")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            HStack(spacing: 10) {
+                Button("Same person") { model.decide(attendee: result.attendee, candidate: candidate, samePerson: true) }
+                    .buttonStyle(.bordered).tint(ink).disabled(confirmed)
+                Button("Different person") { model.decide(attendee: result.attendee, candidate: candidate, samePerson: false) }
+                    .buttonStyle(.bordered).tint(ink).disabled(rejected)
+                Spacer(minLength: 0)
+            }.controlSize(.small).frame(height: 24)
+            // Reserve one line for local feedback, including undo: no moving cards.
+            HStack(spacing: 10) {
+                Text(confirmed ? "Confirmed by you" : rejected ? "Different person · attendee kept in your list" : " ")
+                    .font(.caption).foregroundStyle(ink)
+                Button("Undo", action: model.undoLastClassification)
+                    .buttonStyle(.plain).font(.caption).foregroundStyle(ink)
+                    .opacity(model.canUndoReview(for: result.attendee) ? 1 : 0)
+                    .disabled(!model.canUndoReview(for: result.attendee))
+                    .accessibilityHidden(!model.canUndoReview(for: result.attendee))
+                Spacer(minLength: 0)
+            }.frame(height: 20)
+        }
+        .padding(.top, 2)
     }
 
-    private func creatorCard(_ url: URL) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            Image(systemName: "hand.wave.fill")
-                .font(.system(size: 27)).foregroundStyle(accent).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 6) {
-                Text("One more connection?").font(.headline).foregroundStyle(ink)
-                Text("I’m \(Brand.creatorName). I built this to make meeting people at the summit a little easier. If it helped, add me on LinkedIn and come say hello. I promise I’m easier to find than the export button.")
-                    .font(.subheadline).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Link(destination: url) {
-                    Label("Find me on LinkedIn", systemImage: "arrow.up.right")
-                }
-                .buttonStyle(.bordered).tint(ink)
+    private func candidateIdentity(_ candidate: MatchCandidate) -> some View {
+        Text([candidate.connection.name, candidate.connection.position, candidate.connection.company].filter { !$0.isEmpty }.joined(separator: " · "))
+            .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func candidateProfile(_ candidate: MatchCandidate) -> some View {
+        Group {
+            if let url = linkedInProfileURL(candidate.connection.url), !model.isDemo {
+                Link(destination: url) { Label("Open your connection’s profile", systemImage: "arrow.up.right") }
+                    .buttonStyle(.plain).foregroundStyle(ink)
+                    .help("Open the person from your LinkedIn export—not a verified attendee profile.")
+            } else {
+                Text(model.isDemo ? "Open your connection’s profile ↗ · demo" : "No profile link in this export")
+                    .foregroundStyle(.secondary)
             }
-            Spacer(minLength: 0)
-            Button { creatorCardDismissed = true } label: {
-                Image(systemName: "xmark").font(.caption)
-            }
-            .buttonStyle(.plain).foregroundStyle(.secondary)
-            .accessibilityLabel("Dismiss creator invitation")
-        }
-        .padding(20).frame(maxWidth: .infinity, alignment: .leading)
-        .background(accent.opacity(0.055))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(accent.opacity(0.16)))
+        }.font(.caption).fixedSize()
     }
 
     private func navigationButton(_ title: String, active: Bool, disabled: Bool = false, action: @escaping () -> Void) -> some View {

@@ -43,12 +43,11 @@ Either input can come first. Matching begins when both are ready. Your archive s
 
 ![Possible connections, illustrated with fictional contacts](../Assets/screenshots/span-demo-1.png)
 
-- **Everyone:** one searchable attendee list. Possible connections appear first by default; choose A–Z if you prefer.
-- **Possible connections:** expand a row to compare the attendee’s details with candidates from your export. **View possible connection’s profile** opens the candidate—not a verified attendee profile. **Search LinkedIn** independently searches for the attendee.
-- **Same person / Different person:** confirm the identity or dismiss only that pairing. Undo is available. A dismissal never removes the attendee.
-- **Confirmed by you:** filter to identities you explicitly confirmed. If you verified someone outside the suggestions, expand their row and use **I’ve checked LinkedIn — confirm this attendee**.
-- **Refresh order:** apply the filter/order again after decisions. Rows deliberately stay put while you make choices.
-- **Export list…:** export all attendees, clearly separating confirmed profiles from candidate profiles.
+- **Summit attendees you may know:** possible connections are shown directly beneath the attendee’s event details, with names and job details from your export. Other attendees continue below.
+- **Open a row** to review. **Open your connection’s profile** opens the person from your export—not a verified attendee profile. **Search LinkedIn for the attendee** searches independently using the event details.
+- **Same person / Different person:** confirm the identity or dismiss only that pairing. Undo appears within the row. Your decisions never move or remove the attendee. Dismissed suggestions remain available to revisit; right-click a confirmed attendee to remove a confirmation.
+- **Search:** use the small Search control or Command-F. Close search or press Escape to return to the full list.
+- **Export list…:** at the bottom, export all attendees, clearly separating confirmed profiles from candidate profiles.
 
 Name and company similarity only suggest identities; nothing is confirmed automatically. No suggestion does not mean you are not connected. Profile-detail collection is planned for a later version. Your real inputs and decisions are saved locally; you can quit and return later.
 

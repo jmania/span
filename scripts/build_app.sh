@@ -14,7 +14,7 @@ rm -rf "$app" "$dmg" "$zip"
 
 export SWIFT_MODULECACHE_PATH="$build_dir/module-cache"
 export CLANG_MODULE_CACHE_PATH="$build_dir/clang-cache"
-core_sources="$project_dir/Sources/SummitCore/Attendee.swift $project_dir/Sources/SummitCore/AXClient.swift $project_dir/Sources/SummitCore/DirectoryScan.swift $project_dir/Sources/SummitCore/CSV.swift $project_dir/Sources/SummitCore/NetworkMatcher.swift"
+core_sources="$project_dir/Sources/SummitCore/Attendee.swift $project_dir/Sources/SummitCore/AXClient.swift $project_dir/Sources/SummitCore/DirectoryScan.swift $project_dir/Sources/SummitCore/CSV.swift $project_dir/Sources/SummitCore/NetworkMatcher.swift $project_dir/Sources/SummitCore/SummitListPresentation.swift"
 app_sources="$project_dir/Sources/SummitNetworkApp/Brand.swift $project_dir/Sources/SummitNetworkApp/AppModel.swift $project_dir/Sources/SummitNetworkApp/ConnectionsFile.swift $project_dir/Sources/SummitNetworkApp/ContentView.swift $project_dir/Sources/SummitNetworkApp/SessionStore.swift $project_dir/Sources/SummitNetworkApp/SummitNetworkApp.swift"
 
 build_arch() {

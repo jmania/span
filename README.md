@@ -46,7 +46,7 @@ No Terminal, coding tools, API key, or LinkedIn login inside Span is required to
 
 1. **Get the guest list.** Open Lenny & Friends → Attendees → All attendees. In Span, allow attendee access and click **Collect attendees**. Keep the event app open while collection runs. Span returns to the beginning and verifies the final count.
 2. **Bring your connections.** Request a LinkedIn export containing **Connections**. Drop the downloaded ZIP or `Connections.csv` into Span’s archive box. You can do this before or after collection.
-3. **Explore your list.** Open **Attendees**. Possible connections come first, or choose A–Z. Expand a row to compare candidates; choose **Same person** or **Different person** if you wish. Search LinkedIn independently to find the attendee. Your choices stay put until you change a filter or refresh the order.
+3. **Explore your list.** Open **Attendees**. Possible connections appear directly beneath the attendee’s name and event details. Open a row to compare people; choose **Same person** or **Different person** if you wish. **Open your connection’s profile** refers to the person from your export; **Search LinkedIn for the attendee** searches independently. Rows stay put while you make decisions. Other attendees continue below. Use the small **Search** control (or Command-F) to find someone; **Export list…** is at the bottom.
 
 Collection takes several minutes, especially when the event app starts near the bottom. LinkedIn’s export is a separate wait. [Follow the setup guide →](docs/getting-started.md)
 
