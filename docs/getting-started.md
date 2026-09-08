@@ -2,7 +2,7 @@
 
 Span builds a searchable attendee list and optionally highlights possible connections from your LinkedIn export. Every identity suggestion needs human confirmation. You need an Apple-silicon Mac (M1 or newer) running macOS 13 or later.
 
-**[Download Span for Mac](https://github.com/jmania/span/releases/latest/download/Span-macOS.dmg)** — free, signed, and Apple-notarized. No GitHub account needed. [Release notes](https://github.com/jmania/span/releases/tag/v0.5.2)
+**[Download Span for Mac](https://github.com/jmania/span/releases/latest/download/Span-macOS.dmg)** — free, signed, and Apple-notarized. No GitHub account needed. [Release notes](https://github.com/jmania/span/releases/tag/v0.5.3)
 
 ## 1. Request your LinkedIn export early (optional for browsing)
 

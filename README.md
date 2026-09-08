@@ -29,7 +29,7 @@ Made by [Josh Jacobson](https://www.linkedin.com/in/josh--jacobson/) for fellow 
 
 Having trouble or have feedback? [Leave a comment on my LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7502873550244966400/) and I’ll follow up.
 
-**Release status:** Span 0.5.2 is available. Automated tests and local UI checks passed; an independent second-Mac installation test has not yet been performed. [Release notes](https://github.com/jmania/span/releases/tag/v0.5.2) · [Report a problem](https://github.com/jmania/span/issues)
+**Release status:** Span 0.5.3 is available. Automated tests, signing, Apple notarization, and installer integrity checks passed; an independent second-Mac installation test has not yet been performed. [Release notes](https://github.com/jmania/span/releases/tag/v0.5.3) · [Report a problem](https://github.com/jmania/span/issues)
 
 ## What you get
 
