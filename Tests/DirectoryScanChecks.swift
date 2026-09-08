@@ -89,11 +89,16 @@ func checkDirectoryTraversal() throws {
         preconditionFailure("A count mismatch must not be saved as complete")
     } catch DirectoryScanError.incomplete(let found, let expected) { precondition(found == 1352 && expected == 1400) }
 
+    let overCount = DelayedDirectory(offset: 0)
+    overCount.expected = 1351
+    let extra = try DirectoryScan.run(source: overCount, maximum: 5000, stage: { _ in }, progress: { _ in })
+    precondition(extra.count == 1352, "Reading more attendees than the advertised total must still complete")
+
     let cancelled = DelayedDirectory(offset: 1346)
     cancelled.cancel = true
     do {
         _ = try DirectoryScan.run(source: cancelled, maximum: 5000, stage: { _ in }, progress: { _ in })
         preconditionFailure("Cancellation must stop reset")
     } catch is CancellationError { }
-    print("PASS: 1,352 simulated attendees from top/middle/bottom; delayed animations; false AX success; bounded retries; incomplete-count rejection; cancellation")
+    print("PASS: 1,352 simulated attendees from top/middle/bottom; delayed animations; false AX success; bounded retries; incomplete-count rejection; over-count acceptance; cancellation")
 }

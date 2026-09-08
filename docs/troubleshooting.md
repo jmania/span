@@ -22,6 +22,8 @@ Read the progress message: Span returns to the beginning before counting. Starti
 
 Make sure the event app is signed in, shows All attendees, and has no search or filter applied. Wait until names load, then try **Collect attendees again**. Avoid interacting with the event app during the scan. Saved inputs are retained if collection fails.
 
+Span only reports an incomplete scan when it reads fewer attendees than the event app's header count. Reading one or two more than the header shows is normal (the header count can lag behind the list) and the collection is kept.
+
 For a bug report, include the Span version, macOS version, expected count, observed count, and exact error. `~/Library/Application Support/Summit Network/scan-diagnostics.txt` contains counts and scroll actions, without attendee names.
 
 ## My connections archive hasn’t arrived
