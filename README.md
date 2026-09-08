@@ -27,6 +27,8 @@ Made by [Josh Jacobson](https://www.linkedin.com/in/josh--jacobson/) for fellow 
 
 **[Releases and downloads](https://github.com/jmania/span/releases) · [Setup guide](docs/getting-started.md) · [Troubleshooting](docs/troubleshooting.md)**
 
+Having trouble or have feedback? [Leave a comment on my LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7502873550244966400/) and I’ll follow up.
+
 **Release status:** Span 0.5.1 is available. Automated tests and local UI checks passed; an independent second-Mac installation test has not yet been performed. [Release notes](https://github.com/jmania/span/releases/tag/v0.5.1) · [Report a problem](https://github.com/jmania/span/issues)
 
 ## What you get
@@ -42,7 +44,7 @@ No mandatory review queue. Nothing is automatically labeled a confirmed connecti
 | You need | Why |
 | --- | --- |
 | An Apple-silicon Mac (M1 or newer), running macOS 13 or later | The Lenny & Friends iPhone/iPad app needs Apple silicon to run on a Mac. |
-| The Lenny & Friends app installed and signed in | Span reads the attendee list you can access in the event app. |
+| The [Lenny & Friends Summit app](https://apps.apple.com/us/app/lenny-friends-summit/id6800677901) installed and signed in | Span reads the attendee list you can access in the event app. |
 | Your LinkedIn connections export (optional for browsing) | Adds possible-connection suggestions locally. Request it early; LinkedIn may take time to prepare it. |
 | Accessibility permission for Span | This lets Span read and scroll the attendee list. |
 
