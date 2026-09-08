@@ -3,6 +3,8 @@ import SwiftUI
 enum Brand {
     static let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Span"
     static let tagline = "Your Summit list. People you might know."
+    static let eventAppURL = URL(string: "https://apps.apple.com/us/app/lenny-friends-summit/id6800677901")!
+    static let feedbackURL = URL(string: "https://www.linkedin.com/feed/update/urn:li:activity:7502873550244966400/")!
     static let creatorName = Bundle.main.object(forInfoDictionaryKey: "CreatorName") as? String ?? ""
     static var creatorURL: URL? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: "CreatorLinkedInURL") as? String,

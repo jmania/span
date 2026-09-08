@@ -117,8 +117,12 @@ struct ContentView: View {
 
     private var legalFooter: some View {
         HStack(alignment: .center, spacing: 12) {
-            Text("Independent, unofficial software. Not affiliated with or endorsed by Lenny & Friends Summit, Lenny’s Newsletter, Zuddl, LinkedIn, or any other event or platform. Results are provided as-is; no warranties are made about accuracy, completeness, or fitness for purpose.")
-                .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Independent, unofficial software. Not affiliated with or endorsed by Lenny & Friends Summit, Lenny’s Newsletter, Zuddl, LinkedIn, or any other event or platform. Results are provided as-is; no warranties are made about accuracy, completeness, or fitness for purpose.")
+                    .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Link("Having trouble or feedback? Comment on my LinkedIn post and I’ll follow up.", destination: Brand.feedbackURL)
+                    .font(.caption2).foregroundStyle(ink).fixedSize(horizontal: false, vertical: true)
+            }
             Spacer(minLength: 6)
             if model.hasInputs {
                 Button("Start over…", role: .destructive) { confirmingReset = true }
@@ -168,7 +172,10 @@ struct ContentView: View {
             statusRow("App is open", ready: model.appRunning)
             statusRow("Attendee access allowed", ready: model.accessibilityTrusted)
             Divider()
-            if !model.appRunning {
+            if !model.appInstalled {
+                Link("Get Lenny & Friends on the App Store", destination: Brand.eventAppURL)
+                    .font(.callout).foregroundStyle(ink)
+            } else if !model.appRunning {
                 Button("Open Lenny & Friends") { model.openEventApp() }
             }
             if !model.accessibilityTrusted {

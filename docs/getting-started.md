@@ -17,7 +17,7 @@ LinkedIn says larger archives may take up to 24 hours; yours may arrive sooner. 
 3. Open the disk image and drag **Span** to **Applications**. If upgrading, replace the older app when asked; your saved inputs are separate from the app.
 4. Open Span from Applications. If macOS shows an unexpected security warning, do not disable security protections; [report the exact message](https://github.com/jmania/span/issues).
 
-Install **Lenny & Friends** from the Mac App Store’s iPhone & iPad apps section, sign in with your event account, and open **Attendees → All attendees**. Clear any search or filter. Your event account must already have access to the directory.
+Install [**Lenny & Friends Summit** from the App Store](https://apps.apple.com/us/app/lenny-friends-summit/id6800677901), sign in with your event account, and open **Attendees → All attendees**. Clear any search or filter. Your event account must already have access to the directory.
 
 ## 3. Collect the guest list
 
@@ -50,3 +50,5 @@ Either input can come first. Matching begins when both are ready. Your archive s
 Name and company similarity only suggest identities; nothing is confirmed automatically. No suggestion does not mean you are not connected. Profile-detail collection is planned for a later version. Your real inputs and decisions are saved locally; you can quit and return later.
 
 [Troubleshooting](troubleshooting.md) · [Back to Span](../README.md)
+
+Having trouble or have feedback? [Leave a comment on my LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7502873550244966400/) and I’ll follow up.
