@@ -132,7 +132,12 @@ enum DirectoryScan {
                 try source.waitForAnimation()
                 let confirmation = try source.snapshot()
                 if confirmation.canScrollDown == false && confirmation.signature == page.signature {
-                    if let expected, collected.count != expected {
+                    // Only a shortfall means rows were missed. Reading more
+                    // than the advertised total happens when the event app's
+                    // header count is stale or a card's details change
+                    // between snapshots; that list is still complete enough
+                    // to keep and match against the LinkedIn export.
+                    if let expected, collected.count < expected {
                         throw DirectoryScanError.incomplete(found: collected.count, expected: expected)
                     }
                     return collected
